@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.assertj.core.api.Assertions;
 import org.example.domain.entity.Customer;
 import org.example.domain.enums.CustomerType;
 import org.example.domain.repository.CustomerRepository;
 import org.example.rest.dto_request.AddressDtoRequest;
 import org.example.rest.dto_request.CustomerDtoRequest;
 import org.example.rest.dto_response.CustomerDtoResponse;
+import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.service.impl.AddressServiceImpl;
 import org.example.service.impl.CustomerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +34,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 
-//@SpringBootTest
-//@RunWith(SpringRunner.class)
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 class CustomerServiceTest {
 
@@ -50,10 +52,10 @@ class CustomerServiceTest {
     @Mock
     private AddressServiceImpl addressServiceImpl;
 
-    @BeforeEach
-    void setUp(){
-        this.customerService = new CustomerServiceImpl(new ModelMapper(), customerRepository, addressServiceImpl);
-    }
+//    @BeforeEach
+//    void setUp(){
+//        this.customerService = new CustomerServiceImpl(new ModelMapper(), customerRepository, addressServiceImpl);
+//    }
 
     @Test
     @DisplayName("Should save a customer")
@@ -95,6 +97,7 @@ class CustomerServiceTest {
 
         Customer customer = Customer.builder()
                 .customerType(CustomerType.FISICA)
+                .id(uuid)
                 .name("Ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -145,5 +148,68 @@ class CustomerServiceTest {
 
         //Mockito.verify(customerRepository, Mockito.times(1)).save(customer);
     }
+
+    @Test
+    @DisplayName("Should throw DocumentInUseException -> Document already in use")
+    void doNotsaveCustomerTest(){
+
+        UUID uuid = UUID.randomUUID();
+
+        List<AddressDtoRequest> addresses = new ArrayList<>();
+
+        AddressDtoRequest address1 = AddressDtoRequest.builder()
+                .state("paraíba")
+                .cep("58.135-000")
+                .district("João Pessoa")
+                .street("Rua Joaquim Virgulino da Silva")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        AddressDtoRequest address2 = AddressDtoRequest.builder()
+                .state("paraíba")
+                .cep("58.140-000")
+                .district("Areial")
+                .street("Centro")
+                .houseNumber("12")
+                .mainAddress(false)
+                .build();
+
+        addresses.add(address1);
+        addresses.add(address2);
+
+        CustomerDtoRequest customerdto = CustomerDtoRequest.builder()
+                .customerType(CustomerType.FISICA)
+                .name("Ana")
+                .email("ana@gmail.com")
+                .phoneNumber("83999999999")
+                .document("160.917.000-81")
+                .addresses(  addresses  )
+                .build();
+
+        Customer customer = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(uuid)
+                .name("Ana")
+                .email("ana@gmail.com")
+                .phoneNumber("83999999999")
+                .document("160.917.000-81")
+                .build();
+
+        Mockito.doReturn(Optional.of(customer))
+                .when(customerRepository).findCustomerByDocument(customer.getDocument());
+
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> customerService.save(customerdto));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(DocumentInUseException.class)
+                .hasMessage("This document is already in use.");
+
+        //Mockito.verify(customerRepository, Mockito.times(1)).save(customer);
+    }
+
+
 
 }

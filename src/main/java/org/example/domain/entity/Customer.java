@@ -15,7 +15,9 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.domain.enums.CustomerType;
 import org.example.domain.groups.CustomerGroupSequenceProvider;
 import org.hibernate.annotations.Type;
@@ -27,6 +29,8 @@ import org.hibernate.validator.group.GroupSequenceProvider;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Getter
+@Setter
 @GroupSequenceProvider(CustomerGroupSequenceProvider.class)
 public class Customer {
 
