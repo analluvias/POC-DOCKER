@@ -6,7 +6,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import org.example.rest.exception.exceptionDto.ExceptionDto;
 import org.example.rest.exception.exceptions.DocumentInUseException;
+import org.example.rest.exception.exceptions.EmailInUseException;
+import org.example.rest.exception.exceptions.InvalidCustomerTypeException;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
+import org.example.rest.exception.exceptions.ObjectNotFoundException;
+import org.example.rest.exception.exceptions.PhoneNumberInUseException;
 import org.example.rest.exception.exceptions.TooManyAddresses;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
 import org.springframework.http.HttpStatus;
@@ -129,6 +133,54 @@ public class ControllerAdvice {
         ExceptionDto exceptionDto = new ExceptionDto(
                 HttpStatus.BAD_REQUEST.value(),
                 messageFinal,
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(ObjectNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> objectNotFoundException(ObjectNotFoundException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(EmailInUseException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> emailInUseException(EmailInUseException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(PhoneNumberInUseException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> phoneNumberInUseException(PhoneNumberInUseException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(InvalidCustomerTypeException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> invalidCustomerTypeException(InvalidCustomerTypeException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
                 request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );

@@ -8,6 +8,7 @@ import org.example.domain.entity.Address;
 import org.example.domain.entity.Customer;
 import org.example.domain.repository.AddressRepository;
 import org.example.rest.dto_request.AddressDtoRequest;
+import org.example.rest.dto_response.AddressDtoResponse;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
 import org.example.rest.exception.exceptions.TooManyAddresses;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
@@ -53,5 +54,18 @@ public class AddressServiceImpl implements AddressService {
 
         addressRepository.saveAll(addresses);
 
+    }
+
+    @Override
+    @Transactional
+    public List<AddressDtoResponse> getAddressesByCustomer(Customer customer) {
+        List<Address> addresses = addressRepository.findByCustomer(customer);
+
+        List<AddressDtoResponse> responseList = addresses.stream().map(address -> {
+            AddressDtoResponse add = modelMapper.map(address, AddressDtoResponse.class);
+            return add;
+        }).collect(Collectors.toList());
+
+        return responseList;
     }
 }

@@ -1,11 +1,13 @@
 package org.example.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -49,7 +51,7 @@ public class Customer {
     @NotEmpty(message = "Email cannot be empty")
     private String email;
 
-    @Column(name = "phone", nullable = false)
+    @Column(name = "phoneNumber", nullable = false, unique = true)
     @NotEmpty(message = "phone number cannot be empty")
     private String phoneNumber;
 
@@ -64,7 +66,8 @@ public class Customer {
     @NotEmpty(message = "document cannot be empty")
     private String document;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Address> addresses;
 
 }
