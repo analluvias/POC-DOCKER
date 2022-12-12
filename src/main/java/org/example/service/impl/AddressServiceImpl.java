@@ -10,7 +10,7 @@ import org.example.domain.repository.AddressRepository;
 import org.example.rest.dto_request.AddressDtoRequest;
 import org.example.rest.dto_response.AddressDtoResponse;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
-import org.example.rest.exception.exceptions.TooManyAddresses;
+import org.example.rest.exception.exceptions.TooManyAddressesException;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
 import org.example.service.AddressService;
 import org.modelmapper.ModelMapper;
@@ -29,7 +29,7 @@ public class AddressServiceImpl implements AddressService {
     public void save(List<AddressDtoRequest> addressDtoRequest, Customer customer) {
 
         if (addressDtoRequest.size() > 5)
-            throw new TooManyAddresses();
+            throw new TooManyAddressesException();
 
         AtomicInteger numberOfMainAddress = new AtomicInteger(0);
 
@@ -61,11 +61,15 @@ public class AddressServiceImpl implements AddressService {
     public List<AddressDtoResponse> getAddressesByCustomer(Customer customer) {
         List<Address> addresses = addressRepository.findByCustomer(customer);
 
-        List<AddressDtoResponse> responseList = addresses.stream().map(address -> {
-            AddressDtoResponse add = modelMapper.map(address, AddressDtoResponse.class);
-            return add;
-        }).collect(Collectors.toList());
+        return addresses.stream().map(address -> modelMapper.map(address, AddressDtoResponse.class)).collect(Collectors.toList());
+    }
 
-        return responseList;
+    @Override
+    public void deleteAdressesByCustomer(Customer customer) {
+
+        List<Address> addressList = addressRepository.findByCustomer(customer);
+
+        addressList.forEach(addressRepository::delete);
+
     }
 }

@@ -7,11 +7,12 @@ import javax.validation.ConstraintViolationException;
 import org.example.rest.exception.exceptionDto.ExceptionDto;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.EmailInUseException;
+import org.example.rest.exception.exceptions.EqualValueException;
 import org.example.rest.exception.exceptions.InvalidCustomerTypeException;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
 import org.example.rest.exception.exceptions.ObjectNotFoundException;
 import org.example.rest.exception.exceptions.PhoneNumberInUseException;
-import org.example.rest.exception.exceptions.TooManyAddresses;
+import org.example.rest.exception.exceptions.TooManyAddressesException;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,9 +81,9 @@ public class ControllerAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
     }
 
-    @ExceptionHandler(TooManyAddresses.class)
+    @ExceptionHandler(TooManyAddressesException.class)
     @ResponseBody
-    public ResponseEntity<ExceptionDto> tooManyAddresses(TooManyAddresses ex, HttpServletRequest request){
+    public ResponseEntity<ExceptionDto> tooManyAddresses(TooManyAddressesException ex, HttpServletRequest request){
 
         ExceptionDto exceptionDto = new ExceptionDto(
                 HttpStatus.BAD_REQUEST.value(),
@@ -177,6 +178,18 @@ public class ControllerAdvice {
     @ExceptionHandler(InvalidCustomerTypeException.class)
     @ResponseBody
     public ResponseEntity<ExceptionDto> invalidCustomerTypeException(InvalidCustomerTypeException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(EqualValueException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> equalValueException(EqualValueException ex, HttpServletRequest request){
 
         ExceptionDto exceptionDto = new ExceptionDto(
                 HttpStatus.BAD_REQUEST.value(),

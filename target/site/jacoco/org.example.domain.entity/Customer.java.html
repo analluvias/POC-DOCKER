@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Customer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.domain.entity</a> &gt; <span class="el_source">Customer.java</span></div><h1>Customer.java</h1><pre class="source lang-java linenums">package org.example.domain.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.example.domain.enums.CustomerType;
+import org.example.domain.groups.CustomerGroupSequenceProvider;
+import org.hibernate.annotations.Type;
+import org.hibernate.validator.group.GroupSequenceProvider;
+
+
+<span class="pc bpc" id="L29" title="42 of 62 branches missed.">@Data</span>
+<span class="pc" id="L30">@Builder</span>
+<span class="fc" id="L31">@AllArgsConstructor</span>
+<span class="fc" id="L32">@NoArgsConstructor</span>
+@Entity
+@Getter
+<span class="pc" id="L35">@Setter</span>
+@GroupSequenceProvider(CustomerGroupSequenceProvider.class)
+public class Customer {
+
+    @Type(type = &quot;uuid-char&quot;)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = &quot;id&quot;, nullable = false)
+<span class="fc" id="L43">    private UUID id;</span>
+
+    @Column(name = &quot;name&quot;, nullable = false)
+    @NotEmpty(message = &quot;Name cannot be empty&quot;)
+<span class="fc" id="L47">    private String name;</span>
+
+    @Column(name = &quot;email&quot;, nullable = false, unique = true)
+    //@Email
+    @NotEmpty(message = &quot;Email cannot be empty&quot;)
+<span class="fc" id="L52">    private String email;</span>
+
+    @Column(name = &quot;phoneNumber&quot;, nullable = false, unique = true)
+    @NotEmpty(message = &quot;phone number cannot be empty&quot;)
+<span class="fc" id="L56">    private String phoneNumber;</span>
+
+    @Column(name = &quot;customerType&quot;, nullable = false)
+    @NotNull(message = &quot;customer type cannot be empty&quot;)
+    @Enumerated(EnumType.STRING)
+<span class="fc" id="L61">    private CustomerType customerType;</span>
+
+    @Column(name = &quot;document&quot;, nullable = false, unique = true)
+    //@CPF(groups = CPFGroup.class)
+    //@CNPJ(groups = CNPJGroup.class)
+    @NotEmpty(message = &quot;document cannot be empty&quot;)
+<span class="fc" id="L67">    private String document;</span>
+
+    @OneToMany(mappedBy = &quot;customer&quot;, fetch = FetchType.LAZY)
+    @JsonIgnore
+<span class="fc" id="L71">    private List&lt;Address&gt; addresses;</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

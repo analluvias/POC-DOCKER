@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddressServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.service.impl</a> &gt; <span class="el_source">AddressServiceImpl.java</span></div><h1>AddressServiceImpl.java</h1><pre class="source lang-java linenums">package org.example.service.impl;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.example.domain.entity.Address;
+import org.example.domain.entity.Customer;
+import org.example.domain.repository.AddressRepository;
+import org.example.rest.dto_request.AddressDtoRequest;
+import org.example.rest.dto_response.AddressDtoResponse;
+import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
+import org.example.rest.exception.exceptions.TooManyAddressesException;
+import org.example.rest.exception.exceptions.TooManyMainAddressesException;
+import org.example.service.AddressService;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+<span class="fc" id="L21">@RequiredArgsConstructor</span>
+public class AddressServiceImpl implements AddressService {
+
+    protected final AddressRepository addressRepository;
+
+    protected final ModelMapper modelMapper;
+
+    @Transactional
+    public void save(List&lt;AddressDtoRequest&gt; addressDtoRequest, Customer customer) {
+
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (addressDtoRequest.size() &gt; 5)</span>
+<span class="fc" id="L32">            throw new TooManyAddressesException();</span>
+
+<span class="fc" id="L34">        AtomicInteger numberOfMainAddress = new AtomicInteger(0);</span>
+
+<span class="fc" id="L36">        List&lt;Address&gt; addresses = addressDtoRequest.stream().map(address -&gt; {</span>
+<span class="fc" id="L37">                    Address add = modelMapper.map(address, Address.class);</span>
+<span class="fc" id="L38">                    add.setCustomer(customer);</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">                    if (Boolean.TRUE.equals(address.getMainAddress())){</span>
+<span class="fc" id="L41">                        numberOfMainAddress.getAndIncrement();</span>
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">                        if (numberOfMainAddress.get() &gt; 1){</span>
+<span class="fc" id="L44">                            throw new TooManyMainAddressesException();</span>
+                        }
+
+                    }
+
+<span class="fc" id="L49">                    return add;</span>
+<span class="fc" id="L50">                }).collect(Collectors.toList());</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (numberOfMainAddress.get() == 0)</span>
+<span class="fc" id="L53">            throw new MustHaveAtLeastOneMainAddres();</span>
+
+<span class="fc" id="L55">        addressRepository.saveAll(addresses);</span>
+
+<span class="fc" id="L57">    }</span>
+
+    @Override
+    @Transactional
+    public List&lt;AddressDtoResponse&gt; getAddressesByCustomer(Customer customer) {
+<span class="fc" id="L62">        List&lt;Address&gt; addresses = addressRepository.findByCustomer(customer);</span>
+
+<span class="fc" id="L64">        return addresses.stream().map(address -&gt; modelMapper.map(address, AddressDtoResponse.class)).collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public void deleteAdressesByCustomer(Customer customer) {
+
+<span class="fc" id="L70">        List&lt;Address&gt; addressList = addressRepository.findByCustomer(customer);</span>
+
+<span class="fc" id="L72">        addressList.forEach(addressRepository::delete);</span>
+
+<span class="fc" id="L74">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

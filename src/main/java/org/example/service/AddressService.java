@@ -10,4 +10,6 @@ public interface AddressService {
     public void save(List<AddressDtoRequest> addressDtoRequest, Customer customer);
 
     List<AddressDtoResponse> getAddressesByCustomer(Customer customer);
+
+    void deleteAdressesByCustomer(Customer customer);
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerDtoResponseWithAdresses.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.rest.dto_response</a> &gt; <span class="el_source">CustomerDtoResponseWithAdresses.java</span></div><h1>CustomerDtoResponseWithAdresses.java</h1><pre class="source lang-java linenums">package org.example.rest.dto_response;
+
+import java.util.List;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.example.domain.enums.CustomerType;
+
+<span class="pc" id="L11">@Builder</span>
+<span class="pc bnc" id="L12" title="All 62 branches missed.">@Data</span>
+<span class="fc" id="L13">@AllArgsConstructor</span>
+<span class="nc" id="L14">@NoArgsConstructor</span>
+public class CustomerDtoResponseWithAdresses {
+
+<span class="fc" id="L17">    private UUID id;</span>
+
+<span class="fc" id="L19">    private String name;</span>
+
+<span class="fc" id="L21">    private String email;</span>
+
+<span class="fc" id="L23">    private String phoneNumber;</span>
+
+<span class="fc" id="L25">    private CustomerType customerType;</span>
+
+<span class="fc" id="L27">    private String document;</span>
+
+<span class="fc" id="L29">    List&lt;AddressDtoResponse&gt; addresses;</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

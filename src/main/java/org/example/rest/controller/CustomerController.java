@@ -1,5 +1,6 @@
 package org.example.rest.controller;
 
+import java.awt.print.Book;
 import java.util.UUID;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,11 @@ import org.example.service.impl.CustomerServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,7 +45,6 @@ public class CustomerController {
 
     }
 
-    // ResponseEntity<Page<CustomerDtoResponseWithAdresses>>
     @GetMapping("/searchcustomers")
     @ResponseStatus(HttpStatus.OK)
     public Page<CustomerDtoResponse> searchCustomers(
@@ -58,23 +60,19 @@ public class CustomerController {
                 pageable, email, phoneNumber, document);
     }
 
-//    @GetMapping
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public ResponseEntity<CustomerDtoRequest> teste(){
-//
-//        AddressDtoRequest list = AddressDtoRequest.builder()
-//                .cep("123")
-//                .state("a")
-//                .district("a")
-//                .houseNumber("122")
-//                .street("a")
-//                .build();
-//
-//        CustomerDtoRequest a = CustomerDtoRequest.builder()
-//                .customerType(CustomerType.FISICA)
-//                .addresses(List.of(list))
-//                .build();
-//
-//        return ResponseEntity.ok(a);
-//    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete (@PathVariable("id") UUID uuid){
+
+        service.delete(uuid);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public CustomerDtoResponse putCustomer(@PathVariable("id") UUID uuid,
+                            @RequestBody @Valid CustomerDtoRequest request){
+
+        return service.update(uuid, request);
+    }
+
 }

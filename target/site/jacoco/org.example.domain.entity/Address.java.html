@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Address.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.domain.entity</a> &gt; <span class="el_source">Address.java</span></div><h1>Address.java</h1><pre class="source lang-java linenums">package org.example.domain.entity;
+
+import java.util.UUID;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.modelmapper.internal.util.Assert;
+
+@Entity
+<span class="nc bnc" id="L18" title="All 70 branches missed.">@Data</span>
+@Getter
+<span class="pc" id="L20">@Setter</span>
+<span class="pc" id="L21">@Builder</span>
+<span class="fc" id="L22">@AllArgsConstructor</span>
+<span class="fc" id="L23">@NoArgsConstructor</span>
+public class Address {
+
+    @Id
+    @Type(type = &quot;uuid-char&quot;)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = &quot;id&quot;, nullable = false)
+<span class="fc" id="L30">    private UUID id;</span>
+
+    @Column
+    @NotEmpty(message =&quot;state cannot be empty.&quot;)
+<span class="nc" id="L34">    private String state;</span>
+
+    @Column
+    @NotEmpty(message =&quot;cep cannot be empty.&quot;)
+<span class="fc" id="L38">    private String cep;</span>
+
+    @Column
+    @NotEmpty(message =&quot;district cannot be empty.&quot;)
+<span class="nc" id="L42">    private String district;</span>
+
+    @Column
+    @NotEmpty(message =&quot;street cannot be empty.&quot;)
+<span class="nc" id="L46">    private String street;</span>
+
+    @Column
+    @NotEmpty(message =&quot;house number cannot be empty.&quot;)
+<span class="nc" id="L50">    private String houseNumber;</span>
+
+    @ManyToOne
+    @JoinColumn(name = &quot;customer_id&quot;)
+<span class="nc" id="L54">    private Customer customer;</span>
+
+    @Column
+    @NotNull(message =&quot;You have to specify if this is the main address.&quot;)
+<span class="nc" id="L58">    private Boolean mainAddress;</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

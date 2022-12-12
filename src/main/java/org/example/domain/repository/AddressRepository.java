@@ -9,4 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AddressRepository extends JpaRepository<Address, UUID> {
     List<Address> findByCustomer(Customer customer);
+
+    @Override
+    void delete(Address entity);
 }

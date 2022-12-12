@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.service.impl</a> &gt; <span class="el_source">CustomerServiceImpl.java</span></div><h1>CustomerServiceImpl.java</h1><pre class="source lang-java linenums">package org.example.service.impl;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.example.domain.entity.Customer;
+import org.example.domain.enums.CustomerType;
+import org.example.domain.repository.CustomerRepository;
+import org.example.rest.dto_request.CustomerDtoRequest;
+import org.example.rest.dto_response.AddressDtoResponse;
+import org.example.rest.dto_response.CustomerDtoResponse;
+import org.example.rest.dto_response.CustomerDtoResponseWithAdresses;
+import org.example.rest.exception.exceptions.DocumentInUseException;
+import org.example.rest.exception.exceptions.EmailInUseException;
+import org.example.rest.exception.exceptions.EqualValueException;
+import org.example.rest.exception.exceptions.InvalidCustomerTypeException;
+import org.example.rest.exception.exceptions.ObjectNotFoundException;
+import org.example.rest.exception.exceptions.PhoneNumberInUseException;
+import org.example.service.CustomerService;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+<span class="fc" id="L30">@RequiredArgsConstructor</span>
+public class CustomerServiceImpl implements CustomerService {
+
+    private final ModelMapper modelMapper;
+
+    private final CustomerRepository repository;
+
+    private final AddressServiceImpl addressServiceImpl;
+
+    @Transactional
+    public Boolean existsCustomersByDocument(String document){
+<span class="fc" id="L41">        Optional&lt;Customer&gt; customerByDocument = repository.findCustomerByDocument(document);</span>
+
+<span class="fc" id="L43">        return customerByDocument.isPresent();</span>
+    }
+
+    @Transactional
+    public Boolean existsCustomersByEmail(String email){
+<span class="fc" id="L48">        Optional&lt;Customer&gt; customerByEmail = repository.findByEmail(email);</span>
+
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (customerByEmail.isPresent())</span>
+<span class="fc" id="L51">            return true;</span>
+<span class="fc" id="L52">        return false;</span>
+    }
+
+    @Transactional
+    public Boolean existsCustomersByPhoneNumber(String phone){
+<span class="fc" id="L57">        Optional&lt;Customer&gt; customerByPhoneNumber = repository.findByPhoneNumber(phone);</span>
+
+<span class="fc" id="L59">        return customerByPhoneNumber.isPresent();</span>
+    }
+
+    @Transactional
+    public CustomerDtoResponse save(CustomerDtoRequest customerDto){
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (  Boolean.TRUE.equals(existsCustomersByDocument(customerDto.getDocument()))  ) {</span>
+<span class="fc" id="L66">            throw new DocumentInUseException();</span>
+        }
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (Boolean.TRUE.equals(existsCustomersByEmail(customerDto.getEmail())) ){</span>
+<span class="fc" id="L70">            throw new EmailInUseException();</span>
+        }
+
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (Boolean.TRUE.equals(existsCustomersByPhoneNumber(customerDto.getPhoneNumber()))){</span>
+<span class="fc" id="L74">            throw new PhoneNumberInUseException();</span>
+        }
+<span class="fc" id="L76">        testCustomerType(customerDto);</span>
+
+<span class="fc" id="L78">        Customer customer = modelMapper.map(customerDto, Customer.class);</span>
+
+<span class="fc" id="L80">        customer = repository.save(customer);</span>
+
+<span class="fc" id="L82">        addressServiceImpl.save(customerDto.getAddresses(), customer);</span>
+
+<span class="fc" id="L84">        return modelMapper.map(customer, CustomerDtoResponse.class);</span>
+    }
+
+    public CustomerDtoResponseWithAdresses getCustomerById(UUID id) {
+
+        try {
+<span class="fc" id="L90">            Optional&lt;Customer&gt; customer = repository.findById(id);</span>
+
+<span class="fc" id="L92">            List&lt;AddressDtoResponse&gt; addressesByCustomer = addressServiceImpl.getAddressesByCustomer(customer.get());</span>
+
+
+<span class="fc" id="L95">            CustomerDtoResponseWithAdresses response = modelMapper</span>
+<span class="fc" id="L96">                    .map(customer.get(), CustomerDtoResponseWithAdresses.class);</span>
+
+<span class="fc" id="L98">            response.setAddresses( addressesByCustomer );</span>
+
+<span class="fc" id="L100">            return response;</span>
+
+<span class="fc" id="L102">        } catch(java.util.NoSuchElementException e){</span>
+
+<span class="fc" id="L104">            throw new ObjectNotFoundException(&quot;Customer not found.&quot;);</span>
+        }
+
+    }
+
+    @Override
+    public Page&lt;CustomerDtoResponse&gt; searchCustomers(String customerType, String name
+            , Pageable pageable, String email, String phoneNumber, String document) {
+
+        try {
+
+<span class="fc" id="L115">            Customer customerToSearch = Customer.builder().build();</span>
+
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            if (customerType != null) {</span>
+<span class="fc" id="L118">                CustomerType cType = CustomerType.valueOf(customerType.toUpperCase());</span>
+<span class="fc" id="L119">                customerToSearch.setCustomerType(cType);</span>
+            }
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            if (name != null){</span>
+<span class="fc" id="L122">                customerToSearch.setName(name);</span>
+            }
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">            if (email != null){</span>
+<span class="fc" id="L125">                customerToSearch.setEmail(email);</span>
+            }
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            if (phoneNumber != null){</span>
+<span class="fc" id="L128">                customerToSearch.setPhoneNumber(phoneNumber);</span>
+            }
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">            if (document != null){</span>
+<span class="fc" id="L131">                customerToSearch.setDocument(document);</span>
+            }
+
+<span class="fc" id="L134">            ExampleMatcher matcher = ExampleMatcher.matching()</span>
+<span class="fc" id="L135">                    .withIgnoreCase(&quot;name&quot;, &quot;email&quot;, &quot;document&quot;)</span>
+<span class="fc" id="L136">                    .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);</span>
+
+<span class="fc" id="L138">            Example&lt;Customer&gt; example = Example.of(customerToSearch, matcher);</span>
+
+<span class="fc" id="L140">            Page&lt;Customer&gt; customerPage = repository.findAll(example, pageable);</span>
+
+<span class="pc" id="L142">            return customerPage.map(customer -&gt; modelMapper.map(customer, CustomerDtoResponse.class));</span>
+
+<span class="nc" id="L144">        }catch (java.lang.IllegalArgumentException e){</span>
+
+<span class="nc" id="L146">            throw new InvalidCustomerTypeException();</span>
+
+        }
+
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID uuid) {
+
+<span class="fc" id="L156">        Optional&lt;Customer&gt; customer = getCustomer(uuid);</span>
+
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (customer.isEmpty()){</span>
+<span class="fc" id="L159">            throw new ObjectNotFoundException(&quot;the customer you tried to delete does not exist.&quot;);</span>
+        }
+
+<span class="fc" id="L162">        addressServiceImpl.deleteAdressesByCustomer(customer.get());</span>
+<span class="fc" id="L163">        repository.delete(customer.get());</span>
+<span class="fc" id="L164">    }</span>
+
+    public Optional&lt;Customer&gt; getCustomer(UUID uuid) {
+<span class="fc" id="L167">        Optional&lt;Customer&gt; customer = repository.findById(uuid);</span>
+<span class="fc" id="L168">        return customer;</span>
+    }
+
+    @Transactional
+    @Override
+    public CustomerDtoResponse update(UUID uuid, CustomerDtoRequest request) {
+
+<span class="fc" id="L175">        Optional&lt;Customer&gt; customer = getCustomer(uuid);</span>
+
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if ( customer.isEmpty() )</span>
+<span class="fc" id="L178">            throw new ObjectNotFoundException(&quot;The customer you tried to update does not exist.&quot;);</span>
+
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (customer.get().getEmail().equals(request.getEmail()))</span>
+<span class="fc" id="L181">            throw new EqualValueException(&quot;Customer is already using this email. Try patch.&quot;);</span>
+
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (customer.get().getDocument().equals(request.getDocument()))</span>
+<span class="fc" id="L184">            throw new EqualValueException(&quot;Customer is already using this document. Try patch.&quot;);</span>
+
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (customer.get().getPhoneNumber().equals(request.getPhoneNumber()))</span>
+<span class="fc" id="L187">            throw new EqualValueException(&quot;Customer is already uding this phone number. Try patch.&quot;);</span>
+
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (  Boolean.TRUE.equals(existsCustomersByDocument(request.getDocument()))  )</span>
+<span class="fc" id="L190">            throw new DocumentInUseException();</span>
+
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (Boolean.TRUE.equals(existsCustomersByEmail(request.getEmail())) )</span>
+<span class="fc" id="L193">            throw new EmailInUseException();</span>
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        if (Boolean.TRUE.equals(existsCustomersByPhoneNumber(request.getPhoneNumber())))</span>
+<span class="fc" id="L196">            throw new PhoneNumberInUseException();</span>
+
+<span class="fc" id="L198">        testCustomerType(request);</span>
+
+<span class="fc" id="L200">        customer.get().setDocument( request.getDocument() );</span>
+<span class="fc" id="L201">        customer.get().setCustomerType( request.getCustomerType() );</span>
+<span class="fc" id="L202">        customer.get().setName( request.getName() );</span>
+
+<span class="fc" id="L204">        addressServiceImpl.deleteAdressesByCustomer(customer.get());</span>
+<span class="fc" id="L205">        addressServiceImpl.save(request.getAddresses(), customer.get());</span>
+
+<span class="fc" id="L207">        customer.get().setEmail(request.getEmail() );</span>
+<span class="fc" id="L208">        customer.get().setPhoneNumber( request.getPhoneNumber() );</span>
+
+<span class="fc" id="L210">        repository.save(customer.get());</span>
+
+<span class="fc" id="L212">        return modelMapper.map(customer.get(), CustomerDtoResponse.class);</span>
+    }
+
+    private static void testCustomerType(CustomerDtoRequest request) {
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">        if ( !request.getCustomerType().toString().equals(&quot;FISICA&quot;)</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">                &amp;&amp; !request.getCustomerType().toString().equals(&quot;JURIDICA&quot;) )</span>
+<span class="nc" id="L218">            throw new InvalidCustomerTypeException();</span>
+<span class="fc" id="L219">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

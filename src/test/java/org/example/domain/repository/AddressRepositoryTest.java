@@ -69,4 +69,38 @@ public class AddressRepositoryTest {
 
     }
 
+    @Test
+    @DisplayName("should delete a addresses")
+    void shouldDeleteAAdresses(){
+
+        Customer customer = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(UUID.randomUUID())
+                .name("Ana")
+                .email("ana@gmail.com")
+                .phoneNumber("83999999999")
+                .document("160.917.000-81")
+                .build();
+
+        Address addressToSave1 = Address.builder()
+                .state("paraíba")
+                .cep("58.135-000")
+                .customer(customer)
+                .district("João Pessoa")
+                .street("Rua Joaquim Virgulino da Silva")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        Address addressSaved1 = entityManager.persist(addressToSave1);
+
+        //execução
+        addressRepository.delete(addressSaved1);
+
+        //verificação
+        Address deletedAddress = entityManager.find(Address.class, addressSaved1.getId());
+        assertThat(deletedAddress).isNull();
+
+    }
+
 }
