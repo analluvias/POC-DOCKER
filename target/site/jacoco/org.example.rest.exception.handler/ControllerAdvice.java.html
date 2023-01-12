@@ -5,15 +5,20 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import org.example.rest.exception.exceptionDto.ExceptionDto;
+import org.example.rest.exception.exceptions.AddressMismatchException;
+import org.example.rest.exception.exceptions.CepShouldHaveStateAndCityException;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.EmailInUseException;
 import org.example.rest.exception.exceptions.EqualValueException;
 import org.example.rest.exception.exceptions.InvalidCustomerTypeException;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
+import org.example.rest.exception.exceptions.NonExistentCepException;
+import org.example.rest.exception.exceptions.NullFieldException;
 import org.example.rest.exception.exceptions.ObjectNotFoundException;
 import org.example.rest.exception.exceptions.PhoneNumberInUseException;
 import org.example.rest.exception.exceptions.TooManyAddressesException;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
+import org.example.rest.exception.exceptions.ViaCepAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,182 +27,255 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-<span class="fc" id="L25">public class ControllerAdvice {</span>
+<span class="fc" id="L30">public class ControllerAdvice {</span>
 
     @ExceptionHandler(DocumentInUseException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; handleExistingConsumerException(DocumentInUseException ex, HttpServletRequest request){
-<span class="fc" id="L30">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="fc" id="L31">                HttpStatus.CONFLICT.value(),</span>
-<span class="fc" id="L32">                ex.getMessage(),</span>
-<span class="fc" id="L33">                request.getRequestURI());</span>
+<span class="fc" id="L35">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L36">                HttpStatus.CONFLICT.value(),</span>
+<span class="fc" id="L37">                ex.getMessage(),</span>
+<span class="fc" id="L38">                request.getRequestURI());</span>
 
 
-<span class="fc" id="L36">        return ResponseEntity.status(HttpStatus.CONFLICT).body(  exceptionDto  );</span>
+<span class="fc" id="L41">        return ResponseEntity.status(HttpStatus.CONFLICT).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(TooManyMainAddressesException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; tooManyMainAddressException(TooManyMainAddressesException ex, HttpServletRequest request){
-<span class="nc" id="L42">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L43">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L44">                ex.getMessage(),</span>
-<span class="nc" id="L45">                request.getRequestURI());</span>
+<span class="nc" id="L47">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L48">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L49">                ex.getMessage(),</span>
+<span class="nc" id="L50">                request.getRequestURI());</span>
 
-<span class="nc" id="L47">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L52">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; constraintViolationException(ConstraintViolationException ex, HttpServletRequest request){
 
-<span class="nc" id="L54">        String messageFinal = null;</span>
+<span class="nc" id="L59">        String messageFinal = null;</span>
 
-<span class="nc" id="L56">        Pattern p = Pattern.compile( &quot;messageTemplate='(.[^']*)&quot; );</span>
-<span class="nc" id="L57">        String message = ex.getLocalizedMessage();</span>
-<span class="nc" id="L58">        Matcher m = p.matcher(message);</span>
+<span class="nc" id="L61">        Pattern p = Pattern.compile( &quot;messageTemplate='(.[^']*)&quot; );</span>
+<span class="nc" id="L62">        String message = ex.getLocalizedMessage();</span>
+<span class="nc" id="L63">        Matcher m = p.matcher(message);</span>
 
-<span class="nc bnc" id="L60" title="All 2 branches missed.">        if ( m.find() ) {</span>
-<span class="nc" id="L61">            messageFinal = m.group(1);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if ( m.find() ) {</span>
+<span class="nc" id="L66">            messageFinal = m.group(1);</span>
         }
 
-<span class="nc" id="L64">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L65">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L69">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L70">                HttpStatus.BAD_REQUEST.value(),</span>
                 messageFinal,
-<span class="nc" id="L67">                request.getRequestURI());</span>
+<span class="nc" id="L72">                request.getRequestURI());</span>
 
-<span class="nc" id="L69">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L74">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(MustHaveAtLeastOneMainAddres.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; mustHaveAtLeastOneMainAddres(MustHaveAtLeastOneMainAddres ex, HttpServletRequest request){
 
-<span class="nc" id="L76">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L77">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L78">                ex.getMessage(),</span>
-<span class="nc" id="L79">                request.getRequestURI());</span>
+<span class="fc" id="L81">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L82">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="fc" id="L83">                ex.getMessage(),</span>
+<span class="fc" id="L84">                request.getRequestURI());</span>
 
-<span class="nc" id="L81">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="fc" id="L86">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(TooManyAddressesException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; tooManyAddresses(TooManyAddressesException ex, HttpServletRequest request){
 
-<span class="fc" id="L88">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="fc" id="L89">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="fc" id="L90">                ex.getMessage(),</span>
-<span class="fc" id="L91">                request.getRequestURI());</span>
+<span class="fc" id="L93">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L94">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="fc" id="L95">                ex.getMessage(),</span>
+<span class="fc" id="L96">                request.getRequestURI());</span>
 
-<span class="fc" id="L93">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="fc" id="L98">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; MethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request){
 
-<span class="fc" id="L100">        String messageFinal = null;</span>
+<span class="fc" id="L105">        String messageFinal = null;</span>
 
-<span class="fc" id="L102">        Pattern p = Pattern.compile( &quot;]]; default message \\[(.[^']*)&quot; );</span>
-<span class="fc" id="L103">        String message = ex.getMessage();</span>
-<span class="fc" id="L104">        Matcher m = p.matcher(message);</span>
+<span class="fc" id="L107">        Pattern p = Pattern.compile( &quot;]]; default message \\[(.[^']*)&quot; );</span>
+<span class="fc" id="L108">        String message = ex.getMessage();</span>
+<span class="fc" id="L109">        Matcher m = p.matcher(message);</span>
 
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if ( m.find() ) {</span>
-<span class="fc" id="L107">            messageFinal = m.group(1);</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if ( m.find() ) {</span>
+<span class="fc" id="L112">            messageFinal = m.group(1);</span>
         }
 
-<span class="fc" id="L110">        messageFinal = messageFinal.substring(0, messageFinal.length() - 3);</span>
+<span class="fc" id="L115">        messageFinal = messageFinal.substring(0, messageFinal.length() - 3);</span>
 
-<span class="fc" id="L112">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="fc" id="L113">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="fc" id="L117">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L118">                HttpStatus.BAD_REQUEST.value(),</span>
                 messageFinal,
-<span class="fc" id="L115">                request.getRequestURI());</span>
+<span class="fc" id="L120">                request.getRequestURI());</span>
 
-<span class="fc" id="L117">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="fc" id="L122">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(com.fasterxml.jackson.databind.exc.InvalidFormatException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; invalidFormatException(com.fasterxml.jackson.databind.exc.InvalidFormatException ex, HttpServletRequest request){
 
-<span class="nc" id="L124">        String messageFinal = null;</span>
+<span class="nc" id="L129">        String messageFinal = null;</span>
 
-<span class="nc" id="L126">        Pattern p = Pattern.compile( &quot;String (.[^'\n]*)&quot; );</span>
-<span class="nc" id="L127">        String message = ex.getMessage();</span>
-<span class="nc" id="L128">        Matcher m = p.matcher(message);</span>
+<span class="nc" id="L131">        Pattern p = Pattern.compile( &quot;String (.[^'\n]*)&quot; );</span>
+<span class="nc" id="L132">        String message = ex.getMessage();</span>
+<span class="nc" id="L133">        Matcher m = p.matcher(message);</span>
 
-<span class="nc bnc" id="L130" title="All 2 branches missed.">        if ( m.find() ) {</span>
-<span class="nc" id="L131">            messageFinal = m.group(1);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if ( m.find() ) {</span>
+<span class="nc" id="L136">            messageFinal = m.group(1);</span>
         }
 
-<span class="nc" id="L134">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L135">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L139">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L140">                HttpStatus.BAD_REQUEST.value(),</span>
                 messageFinal,
-<span class="nc" id="L137">                request.getRequestURI());</span>
+<span class="nc" id="L142">                request.getRequestURI());</span>
 
-<span class="nc" id="L139">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L144">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; objectNotFoundException(ObjectNotFoundException ex, HttpServletRequest request){
 
-<span class="fc" id="L146">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="fc" id="L147">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="fc" id="L148">                ex.getMessage(),</span>
-<span class="fc" id="L149">                request.getRequestURI());</span>
+<span class="fc" id="L151">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L152">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="fc" id="L153">                ex.getMessage(),</span>
+<span class="fc" id="L154">                request.getRequestURI());</span>
 
-<span class="fc" id="L151">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="fc" id="L156">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(EmailInUseException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; emailInUseException(EmailInUseException ex, HttpServletRequest request){
 
-<span class="nc" id="L158">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L159">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L160">                ex.getMessage(),</span>
-<span class="nc" id="L161">                request.getRequestURI());</span>
+<span class="nc" id="L163">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L164">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L165">                ex.getMessage(),</span>
+<span class="nc" id="L166">                request.getRequestURI());</span>
 
-<span class="nc" id="L163">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L168">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(PhoneNumberInUseException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; phoneNumberInUseException(PhoneNumberInUseException ex, HttpServletRequest request){
 
-<span class="nc" id="L170">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L171">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L172">                ex.getMessage(),</span>
-<span class="nc" id="L173">                request.getRequestURI());</span>
+<span class="nc" id="L175">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L176">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L177">                ex.getMessage(),</span>
+<span class="nc" id="L178">                request.getRequestURI());</span>
 
-<span class="nc" id="L175">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L180">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(InvalidCustomerTypeException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; invalidCustomerTypeException(InvalidCustomerTypeException ex, HttpServletRequest request){
 
-<span class="nc" id="L182">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L183">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L184">                ex.getMessage(),</span>
-<span class="nc" id="L185">                request.getRequestURI());</span>
+<span class="nc" id="L187">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L188">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L189">                ex.getMessage(),</span>
+<span class="nc" id="L190">                request.getRequestURI());</span>
 
-<span class="nc" id="L187">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L192">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
     @ExceptionHandler(EqualValueException.class)
     @ResponseBody
     public ResponseEntity&lt;ExceptionDto&gt; equalValueException(EqualValueException ex, HttpServletRequest request){
 
-<span class="nc" id="L194">        ExceptionDto exceptionDto = new ExceptionDto(</span>
-<span class="nc" id="L195">                HttpStatus.BAD_REQUEST.value(),</span>
-<span class="nc" id="L196">                ex.getMessage(),</span>
-<span class="nc" id="L197">                request.getRequestURI());</span>
+<span class="nc" id="L199">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L200">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L201">                ex.getMessage(),</span>
+<span class="nc" id="L202">                request.getRequestURI());</span>
 
-<span class="nc" id="L199">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+<span class="nc" id="L204">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
     }
 
+
+    @ExceptionHandler(NonExistentCepException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; nonExistentCepException(NonExistentCepException ex, HttpServletRequest request){
+
+<span class="nc" id="L212">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L213">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L214">                ex.getMessage(),</span>
+<span class="nc" id="L215">                request.getRequestURI());</span>
+
+<span class="nc" id="L217">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
+
+    @ExceptionHandler(CepShouldHaveStateAndCityException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; cepShouldHaveStateAndCityException(CepShouldHaveStateAndCityException ex, HttpServletRequest request){
+
+<span class="fc" id="L224">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="fc" id="L225">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="fc" id="L226">                ex.getMessage(),</span>
+<span class="fc" id="L227">                request.getRequestURI());</span>
+
+<span class="fc" id="L229">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
+
+    @ExceptionHandler(AddressMismatchException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; addressMismatchException(AddressMismatchException ex, HttpServletRequest request){
+
+<span class="nc" id="L236">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L237">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L238">                ex.getMessage(),</span>
+<span class="nc" id="L239">                request.getRequestURI());</span>
+
+<span class="nc" id="L241">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
+
+    @ExceptionHandler(ViaCepAccessException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; ViaCepAccessException(ViaCepAccessException ex, HttpServletRequest request){
+
+<span class="nc" id="L248">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L249">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L250">                ex.getMessage(),</span>
+<span class="nc" id="L251">                request.getRequestURI());</span>
+
+<span class="nc" id="L253">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
+
+    @ExceptionHandler(NullFieldException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; nullFieldException(NullFieldException ex, HttpServletRequest request){
+
+<span class="nc" id="L260">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L261">                HttpStatus.BAD_REQUEST.value(),</span>
+<span class="nc" id="L262">                ex.getMessage(),</span>
+<span class="nc" id="L263">                request.getRequestURI());</span>
+
+<span class="nc" id="L265">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
+
+
+    @ExceptionHandler(java.sql.SQLIntegrityConstraintViolationException.class)
+    @ResponseBody
+    public ResponseEntity&lt;ExceptionDto&gt; SQLIntegrityConstraintViolationException(java.sql.SQLIntegrityConstraintViolationException ex, HttpServletRequest request){
+
+<span class="nc" id="L273">        ExceptionDto exceptionDto = new ExceptionDto(</span>
+<span class="nc" id="L274">                HttpStatus.BAD_REQUEST.value(),</span>
+                &quot;Document already in use.&quot;,
+<span class="nc" id="L276">                request.getRequestURI());</span>
+
+<span class="nc" id="L278">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

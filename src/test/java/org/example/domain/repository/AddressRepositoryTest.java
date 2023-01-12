@@ -2,8 +2,6 @@ package org.example.domain.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import org.example.domain.entity.Address;
 import org.example.domain.entity.Customer;
@@ -46,7 +44,6 @@ public class AddressRepositoryTest {
                 .cep("58.135-000")
                 .customer(customer)
                 .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
@@ -56,7 +53,6 @@ public class AddressRepositoryTest {
                 .cep("58.140-000")
                 .customer(customer)
                 .district("Areial")
-                .street("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -87,7 +83,6 @@ public class AddressRepositoryTest {
                 .cep("58.135-000")
                 .customer(customer)
                 .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();

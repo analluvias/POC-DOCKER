@@ -5,15 +5,20 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import org.example.rest.exception.exceptionDto.ExceptionDto;
+import org.example.rest.exception.exceptions.AddressMismatchException;
+import org.example.rest.exception.exceptions.CepShouldHaveStateAndCityException;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.EmailInUseException;
 import org.example.rest.exception.exceptions.EqualValueException;
 import org.example.rest.exception.exceptions.InvalidCustomerTypeException;
 import org.example.rest.exception.exceptions.MustHaveAtLeastOneMainAddres;
+import org.example.rest.exception.exceptions.NonExistentCepException;
+import org.example.rest.exception.exceptions.NullFieldException;
 import org.example.rest.exception.exceptions.ObjectNotFoundException;
 import org.example.rest.exception.exceptions.PhoneNumberInUseException;
 import org.example.rest.exception.exceptions.TooManyAddressesException;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
+import org.example.rest.exception.exceptions.ViaCepAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -199,4 +204,77 @@ public class ControllerAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
     }
 
+
+    @ExceptionHandler(NonExistentCepException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> nonExistentCepException(NonExistentCepException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(CepShouldHaveStateAndCityException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> cepShouldHaveStateAndCityException(CepShouldHaveStateAndCityException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(AddressMismatchException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> addressMismatchException(AddressMismatchException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(ViaCepAccessException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> ViaCepAccessException(ViaCepAccessException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+    @ExceptionHandler(NullFieldException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> nullFieldException(NullFieldException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
+
+
+    @ExceptionHandler(java.sql.SQLIntegrityConstraintViolationException.class)
+    @ResponseBody
+    public ResponseEntity<ExceptionDto> SQLIntegrityConstraintViolationException(java.sql.SQLIntegrityConstraintViolationException ex, HttpServletRequest request){
+
+        ExceptionDto exceptionDto = new ExceptionDto(
+                HttpStatus.BAD_REQUEST.value(),
+                "Document already in use.",
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(  exceptionDto  );
+    }
 }

@@ -1,6 +1,7 @@
 package org.example.rest.dto_response;
 
-import java.util.List;
+import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,15 +9,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.domain.enums.CustomerType;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerDtoResponseWithAdresses {
+public class CustomerDtoResponseV2 implements Serializable {
 
     private UUID id;
 
     private String name;
+
+    private LocalDate birthDate;
 
     private String email;
 
@@ -25,7 +28,5 @@ public class CustomerDtoResponseWithAdresses {
     private CustomerType customerType;
 
     private String document;
-
-    List<AddressDtoResponse> addresses;
 
 }

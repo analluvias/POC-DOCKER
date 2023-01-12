@@ -1,5 +1,7 @@
 package org.example.service.impl;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -7,10 +9,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.domain.entity.Customer;
 import org.example.domain.enums.CustomerType;
 import org.example.domain.repository.CustomerRepository;
-import org.example.rest.dto_request.CustomerDtoRequest;
+import org.example.rest.dto_request.CustomerDtoRequestV1;
+import org.example.rest.dto_request.CustomerDtoRequestV2;
+import org.example.rest.dto_request.UpdateCustomerDtoRequestV1;
+import org.example.rest.dto_request.UpdateCustomerDtoRequestV2;
 import org.example.rest.dto_response.AddressDtoResponse;
-import org.example.rest.dto_response.CustomerDtoResponse;
-import org.example.rest.dto_response.CustomerDtoResponseWithAdresses;
+import org.example.rest.dto_response.CustomerDtoResponseV1;
+import org.example.rest.dto_response.CustomerDtoResponseV2;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV2;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV1;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.EmailInUseException;
 import org.example.rest.exception.exceptions.EqualValueException;
@@ -47,9 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
     public Boolean existsCustomersByEmail(String email){
         Optional<Customer> customerByEmail = repository.findByEmail(email);
 
-        if (customerByEmail.isPresent())
-            return true;
-        return false;
+        return customerByEmail.isPresent();
     }
 
     @Transactional
@@ -60,7 +65,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Transactional
-    public CustomerDtoResponse save(CustomerDtoRequest customerDto){
+    public CustomerDtoResponseWithAddressesV1 saveV1(CustomerDtoRequestV1 customerDto){
 
         if (  Boolean.TRUE.equals(existsCustomersByDocument(customerDto.getDocument()))  ) {
             throw new DocumentInUseException();
@@ -73,18 +78,25 @@ public class CustomerServiceImpl implements CustomerService {
         if (Boolean.TRUE.equals(existsCustomersByPhoneNumber(customerDto.getPhoneNumber()))){
             throw new PhoneNumberInUseException();
         }
-        testCustomerType(customerDto);
+
+        testCustomerType(customerDto.getCustomerType());
 
         Customer customer = modelMapper.map(customerDto, Customer.class);
 
+        customer.setDocument( reviewDocument(customer.getDocument()) );
+
         customer = repository.save(customer);
 
-        addressServiceImpl.save(customerDto.getAddresses(), customer);
+        CustomerDtoResponseWithAddressesV1 response = modelMapper.map(customer, CustomerDtoResponseWithAddressesV1.class);
 
-        return modelMapper.map(customer, CustomerDtoResponse.class);
+        response.setAddresses(  addressServiceImpl.save(customerDto.getAddresses(), customer)  );
+
+        return response;
+
     }
 
-    public CustomerDtoResponseWithAdresses getCustomerById(UUID id) {
+
+    public CustomerDtoResponseWithAddressesV1 getCustomerByIdV1(UUID id) {
 
         try {
             Optional<Customer> customer = repository.findById(id);
@@ -92,8 +104,8 @@ public class CustomerServiceImpl implements CustomerService {
             List<AddressDtoResponse> addressesByCustomer = addressServiceImpl.getAddressesByCustomer(customer.get());
 
 
-            CustomerDtoResponseWithAdresses response = modelMapper
-                    .map(customer.get(), CustomerDtoResponseWithAdresses.class);
+            CustomerDtoResponseWithAddressesV1 response = modelMapper
+                    .map(customer.get(), CustomerDtoResponseWithAddressesV1.class);
 
             response.setAddresses( addressesByCustomer );
 
@@ -107,28 +119,42 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Page<CustomerDtoResponse> searchCustomers(String customerType, String name
+    public Page<CustomerDtoResponseV1> searchCustomers(String customerType, String name
             , Pageable pageable, String email, String phoneNumber, String document) {
 
         try {
 
-            Customer customerToSearch = Customer.builder().build();
+            Customer customerToSearch = buildCustomerToSearch(customerType, name, email, phoneNumber, document);
 
-            if (customerType != null) {
-                CustomerType cType = CustomerType.valueOf(customerType.toUpperCase());
-                customerToSearch.setCustomerType(cType);
-            }
-            if (name != null){
-                customerToSearch.setName(name);
-            }
-            if (email != null){
-                customerToSearch.setEmail(email);
-            }
-            if (phoneNumber != null){
-                customerToSearch.setPhoneNumber(phoneNumber);
-            }
-            if (document != null){
-                customerToSearch.setDocument(document);
+            ExampleMatcher matcher = ExampleMatcher.matching()
+                    .withIgnoreCase("name", "email", "document")
+                    .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
+
+            Example<Customer> example = Example.of(customerToSearch, matcher);
+
+            Page<Customer> customerPage = repository.findAll(example, pageable);
+
+            return customerPage.map(customer -> modelMapper.map(customer, CustomerDtoResponseV1.class));
+
+        }catch (java.lang.IllegalArgumentException e){
+
+            throw new InvalidCustomerTypeException();
+
+        }
+
+    }
+
+
+    @Override
+    public Page<CustomerDtoResponseV2> searchCustomersV2(String customerType, String name
+            , Pageable pageable, String email, String phoneNumber, String document, LocalDate value) {
+
+        try {
+
+            Customer customerToSearch = buildCustomerToSearch(customerType, name, email, phoneNumber, document);
+
+            if (value != null){
+                customerToSearch.setBirthDate(value);
             }
 
             ExampleMatcher matcher = ExampleMatcher.matching()
@@ -139,7 +165,7 @@ public class CustomerServiceImpl implements CustomerService {
 
             Page<Customer> customerPage = repository.findAll(example, pageable);
 
-            return customerPage.map(customer -> modelMapper.map(customer, CustomerDtoResponse.class));
+            return customerPage.map(customer -> modelMapper.map(customer, CustomerDtoResponseV2.class));
 
         }catch (java.lang.IllegalArgumentException e){
 
@@ -149,73 +175,211 @@ public class CustomerServiceImpl implements CustomerService {
 
     }
 
+    private static Customer buildCustomerToSearch(String customerType, String name, String email, String phoneNumber,
+                                              String document) {
+
+        Customer customerToSearch = Customer.builder().build();
+
+        if (customerType != null) {
+            CustomerType cType = CustomerType.valueOf(customerType.toUpperCase());
+            customerToSearch.setCustomerType(cType);
+        }
+
+        if (name != null){
+            customerToSearch.setName(name);
+        }
+
+        if (email != null){
+            customerToSearch.setEmail(email);
+        }
+
+        if (phoneNumber != null){
+            customerToSearch.setPhoneNumber(phoneNumber);
+        }
+
+        if (document != null){
+            customerToSearch.setDocument(document);
+        }
+
+        return customerToSearch;
+
+    }
+
+
+
     @Transactional
     @Override
     public void delete(UUID uuid) {
 
-        Optional<Customer> customer = getCustomer(uuid);
+        Customer customer = getCustomer(uuid);
 
-        if (customer.isEmpty()){
-            throw new ObjectNotFoundException("the customer you tried to delete does not exist.");
-        }
-
-        addressServiceImpl.deleteAdressesByCustomer(customer.get());
-        repository.delete(customer.get());
+        addressServiceImpl.deleteAdressesByCustomer(customer);
+        repository.delete(customer);
     }
 
-    public Optional<Customer> getCustomer(UUID uuid) {
+    public Customer getCustomer(UUID uuid) {
+
         Optional<Customer> customer = repository.findById(uuid);
-        return customer;
+
+        if (customer.isEmpty()){
+            throw new ObjectNotFoundException("the customer you tried to find does not exist.");
+        }
+
+        return customer.get();
     }
 
     @Transactional
     @Override
-    public CustomerDtoResponse update(UUID uuid, CustomerDtoRequest request) {
+    public CustomerDtoResponseWithAddressesV1 update(UUID uuid, UpdateCustomerDtoRequestV1 request) {
 
-        Optional<Customer> customer = getCustomer(uuid);
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
 
-        if ( customer.isEmpty() )
-            throw new ObjectNotFoundException("The customer you tried to update does not exist.");
+        Customer customer = validateUpdate(uuid, request);
 
-        if (customer.get().getEmail().equals(request.getEmail()))
-            throw new EqualValueException("Customer is already using this email. Try patch.");
+        if (request.getAddresses() != null) {
+            addressServiceImpl.deleteAdressesByCustomer(customer);
+            addressServiceImpl.save(request.getAddresses(), customer);
+        }
 
-        if (customer.get().getDocument().equals(request.getDocument()))
-            throw new EqualValueException("Customer is already using this document. Try patch.");
+        addressDtoResponses = addressServiceImpl.getAddressesByCustomer(customer);
 
-        if (customer.get().getPhoneNumber().equals(request.getPhoneNumber()))
-            throw new EqualValueException("Customer is already uding this phone number. Try patch.");
+        Customer updatedCustomer = repository.save(customer);
+
+        CustomerDtoResponseWithAddressesV1 response = modelMapper.map(updatedCustomer, CustomerDtoResponseWithAddressesV1.class);
+
+        response.setAddresses(addressDtoResponses);
+
+        return response;
+    }
+
+
+    private static void testCustomerType(CustomerType cType) {
+
+        if (cType == null || (!cType.toString().equals("FISICA")
+                && !cType.toString().equals("JURIDICA")))
+            throw new InvalidCustomerTypeException();
+
+    }
+
+
+    @Override
+    @Transactional
+    public CustomerDtoResponseWithAddressesV2 saveV2(CustomerDtoRequestV2 customerDtoV2) {
+
+        CustomerDtoRequestV1 customerDtoRequestV1 = modelMapper.map(customerDtoV2, CustomerDtoRequestV1.class);
+
+        CustomerDtoResponseWithAddressesV1 savedV1 = saveV1(customerDtoRequestV1);
+
+        Customer customer = getCustomer( savedV1.getId() );
+
+        customer.setBirthDate( customerDtoV2.getBirthDate() );
+
+        repository.save(customer);
+
+        CustomerDtoResponseWithAddressesV2 v2ToReturn = modelMapper.map(customer, CustomerDtoResponseWithAddressesV2.class);
+
+        v2ToReturn.setAddresses( savedV1.getAddresses() );
+
+        return v2ToReturn;
+    }
+
+
+    @Override
+    public CustomerDtoResponseWithAddressesV2 getCustomerByIdV2(UUID id) {
+        try {
+            Optional<Customer> customer = repository.findById(id);
+
+            List<AddressDtoResponse> addressesByCustomer = addressServiceImpl.getAddressesByCustomer(customer.get());
+
+
+            CustomerDtoResponseWithAddressesV2 response = modelMapper
+                    .map(customer.get(), CustomerDtoResponseWithAddressesV2.class);
+
+            response.setAddresses( addressesByCustomer );
+
+            return response;
+
+        } catch(java.util.NoSuchElementException e){
+
+            throw new ObjectNotFoundException("Customer not found.");
+        }
+
+    }
+
+
+    @Transactional
+    @Override
+    public CustomerDtoResponseWithAddressesV2 updateV2(UUID uuid, UpdateCustomerDtoRequestV2 request) {
+
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
+
+        Customer customer = validateUpdate(uuid, modelMapper.map(request, UpdateCustomerDtoRequestV1.class));
+
+        if (request.getAddresses() != null) {
+            addressServiceImpl.deleteAdressesByCustomer(customer);
+            addressServiceImpl.save(request.getAddresses(), customer);
+        }
+
+        addressDtoResponses = addressServiceImpl.getAddressesByCustomer(customer);
+
+        if (request.getBirthDate() != null)
+            customer.setBirthDate(  request.getBirthDate()  );
+
+        Customer updatedCustomer = repository.save(customer);
+
+        CustomerDtoResponseWithAddressesV2 response = modelMapper.map(updatedCustomer, CustomerDtoResponseWithAddressesV2.class);
+
+        response.setAddresses(addressDtoResponses);
+
+        return response;
+    }
+
+
+    private Customer validateUpdate(UUID uuid, UpdateCustomerDtoRequestV1 request){
+
+        Customer customer = getCustomer(uuid);
+
+        if (  customer.getEmail().equals(request.getEmail())  )
+            throw new EqualValueException("Customer is already using this email.");
+
+        if (  customer.getDocument().equals(request.getDocument())  )
+            throw new EqualValueException("Customer is already using this document.");
+
+        if (  customer.getPhoneNumber().equals(request.getPhoneNumber())  )
+            throw new EqualValueException("Customer is already uding this phone number.");
 
         if (  Boolean.TRUE.equals(existsCustomersByDocument(request.getDocument()))  )
             throw new DocumentInUseException();
 
-        if (Boolean.TRUE.equals(existsCustomersByEmail(request.getEmail())) )
+        if (  Boolean.TRUE.equals(existsCustomersByEmail(request.getEmail())) )
             throw new EmailInUseException();
 
-        if (Boolean.TRUE.equals(existsCustomersByPhoneNumber(request.getPhoneNumber())))
+        if (  Boolean.TRUE.equals(existsCustomersByPhoneNumber(request.getPhoneNumber()))  )
             throw new PhoneNumberInUseException();
 
-        testCustomerType(request);
+        if (  request.getDocument() != null  )
+            customer.setDocument( reviewDocument(request.getDocument()) );
 
-        customer.get().setDocument( request.getDocument() );
-        customer.get().setCustomerType( request.getCustomerType() );
-        customer.get().setName( request.getName() );
+        if (  request.getName() != null  )
+            customer.setName( request.getName() );
 
-        addressServiceImpl.deleteAdressesByCustomer(customer.get());
-        addressServiceImpl.save(request.getAddresses(), customer.get());
+        if (request.getEmail() != null)
+            customer.setEmail(request.getEmail() );
 
-        customer.get().setEmail(request.getEmail() );
-        customer.get().setPhoneNumber( request.getPhoneNumber() );
+        if (request.getPhoneNumber() != null)
+            customer.setPhoneNumber( request.getPhoneNumber() );
 
-        repository.save(customer.get());
-
-        return modelMapper.map(customer.get(), CustomerDtoResponse.class);
+        return customer;
     }
 
-    private static void testCustomerType(CustomerDtoRequest request) {
-        if ( !request.getCustomerType().toString().equals("FISICA")
-                && !request.getCustomerType().toString().equals("JURIDICA") )
-            throw new InvalidCustomerTypeException();
+    private String reviewDocument(String document) {
+
+        document = document.replace("-", "");
+        document = document.replace("/", "");
+        document = document.replace(".", "");
+
+        return document;
+
     }
 
 }

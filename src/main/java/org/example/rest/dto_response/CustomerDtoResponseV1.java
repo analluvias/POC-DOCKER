@@ -1,5 +1,6 @@
 package org.example.rest.dto_response;
 
+import java.io.Serializable;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,7 @@ import org.example.domain.enums.CustomerType;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerDtoResponse {
+public class CustomerDtoResponseV1 implements Serializable {
 
     private UUID id;
 

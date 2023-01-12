@@ -8,16 +8,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import org.example.domain.entity.Address;
 import org.example.domain.entity.Customer;
 import org.example.domain.enums.CustomerType;
 import org.example.rest.dto_request.AddressDtoRequest;
-import org.example.rest.dto_request.CustomerDtoRequest;
+import org.example.rest.dto_request.CustomerDtoRequestV1;
+import org.example.rest.dto_request.UpdateCustomerDtoRequestV1;
 import org.example.rest.dto_response.AddressDtoResponse;
-import org.example.rest.dto_response.CustomerDtoResponse;
-import org.example.rest.dto_response.CustomerDtoResponseWithAdresses;
+import org.example.rest.dto_response.CustomerDtoResponseV1;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV1;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.ObjectNotFoundException;
 import org.example.rest.exception.exceptions.TooManyAddressesException;
@@ -47,11 +46,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = CustomerController.class)
+@WebMvcTest(controllers = CustomerControllerV1.class)
 @AutoConfigureMockMvc
-class CustomerControllerTest {
+class CustomerControllerV1Test {
 
-    static String CUSTOMER_API = "/api/customers";
+    static String CUSTOMER_API = "/v1/api/customers";
 
     @Autowired
     MockMvc mvc;
@@ -69,19 +68,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("avenida rio branco")
+                .district("bela vista")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .cep("58417290")
+                .publicArea("Avenida Francisco Lopes de Almeida")
+                .district("Santa Cruz")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -89,7 +86,30 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
+
+        AddressDtoResponse response1= AddressDtoResponse.builder()
+                .id(UUID.randomUUID().toString())
+                .cep("58135000")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .city("campina grande")
+                .state("PB")
+                .build();
+
+        AddressDtoResponse response2= AddressDtoResponse.builder()
+                .id(UUID.randomUUID().toString())
+                .cep("58417290")
+                .houseNumber("12")
+                .mainAddress(false)
+                .city("campina grande")
+                .state("PB")
+                .build();
+
+        addressDtoResponses.add(response1);
+        addressDtoResponses.add(response2);
+
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana livia")
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
@@ -98,18 +118,19 @@ class CustomerControllerTest {
                 .addresses(  addressDtoRequests  )
                 .build();
 
-        CustomerDtoResponse customerDtoResponse = CustomerDtoResponse.builder()
+        CustomerDtoResponseWithAddressesV1 customerDtoResponse = CustomerDtoResponseWithAddressesV1.builder()
                 .customerType(CustomerType.FISICA)
                 .email("emailteste@gmail.com")
                 .name("ana livia")
                 .phoneNumber("83999999999")
                 .document("160.917.000-81")
+                .addresses( addressDtoResponses )
                 .build();
 
         BDDMockito.when( customerServiceImpl.existsCustomersByDocument(customerDtoResponse.getDocument()) )
                         .thenReturn(false);
 
-        BDDMockito.given( customerServiceImpl.save( dto ) ).willReturn( customerDtoResponse );
+        BDDMockito.given( customerServiceImpl.saveV1( dto ) ).willReturn( customerDtoResponse );
 
         String json = new ObjectMapper().writeValueAsString( dto );
 
@@ -131,7 +152,8 @@ class CustomerControllerTest {
                 .andExpect(  jsonPath("phoneNumber").
                         value( dto.getPhoneNumber() ))
                 .andExpect( jsonPath("document").
-                        value( dto.getDocument() ));
+                        value( dto.getDocument() ))
+                .andExpect(jsonPath("addresses").exists());
 
 
     }
@@ -143,55 +165,49 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .cep("58140000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
 
         AddressDtoRequest addressDtoRequest3 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest4 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .cep("58140000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
 
         AddressDtoRequest addressDtoRequest5 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest6 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .cep("58140000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -203,7 +219,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest5);
         addressDtoRequests.add(addressDtoRequest6);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana livia")
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
@@ -212,15 +228,7 @@ class CustomerControllerTest {
                 .addresses(  addressDtoRequests  )
                 .build();
 
-        CustomerDtoResponse customerDtoResponse = CustomerDtoResponse.builder()
-                .customerType(CustomerType.FISICA)
-                .email("emailteste@gmail.com")
-                .name("ana livia")
-                .phoneNumber("83999999999")
-                .document("160.917.000-81")
-                .build();
-
-        BDDMockito.given( customerServiceImpl.save( dto ) )
+        BDDMockito.given( customerServiceImpl.saveV1( dto ) )
                 .willThrow( new TooManyAddressesException());
 
         String json = new ObjectMapper().writeValueAsString( dto );
@@ -244,19 +252,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -264,7 +270,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .phoneNumber("83999999999")
                 .customerType(CustomerType.FISICA)
@@ -293,19 +299,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .cep("58140000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -313,7 +317,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
                 .customerType(CustomerType.FISICA)
@@ -342,19 +346,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -362,7 +364,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .email("ana@gmail.com")
                 .customerType(CustomerType.FISICA)
@@ -391,19 +393,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -411,7 +411,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -441,19 +441,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -461,7 +459,7 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -470,7 +468,7 @@ class CustomerControllerTest {
                 .addresses(  addressDtoRequests  )
                 .build();
 
-        BDDMockito.given( customerServiceImpl.save( Mockito.any(CustomerDtoRequest.class) ) )
+        BDDMockito.given( customerServiceImpl.saveV1( Mockito.any(CustomerDtoRequestV1.class) ) )
                 .willThrow( new DocumentInUseException());
 
         String json = new ObjectMapper().writeValueAsString( dto );
@@ -499,26 +497,24 @@ class CustomerControllerTest {
                 .state("paraíba")
                 .cep("58.135-000")
                 .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         addressDtoResponses.add(addressDtoResponse);
 
-        CustomerDtoResponseWithAdresses customer = CustomerDtoResponseWithAdresses.builder()
-        .email("ana@gmail.com")
-        .id(id)
-        .customerType(  CustomerType.FISICA  )
-        .document("160.917.000-81")
-        .addresses(  addressDtoResponses  )
-        .build();
+        CustomerDtoResponseWithAddressesV1 customer = CustomerDtoResponseWithAddressesV1.builder()
+                .email("ana@gmail.com")
+                .id(id)
+                .customerType(  CustomerType.FISICA  )
+                .document("160.917.000-81")
+                .addresses(  addressDtoResponses  )
+                .build();
 
-        BDDMockito.given( customerServiceImpl.getCustomerById(id) ).willReturn( customer );
+        BDDMockito.given( customerServiceImpl.getCustomerByIdV1(id) ).willReturn( customer );
 
 
         //execução (when)
-
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get(CUSTOMER_API.concat("/" + id))
                 .accept(MediaType.APPLICATION_JSON);
@@ -534,7 +530,7 @@ class CustomerControllerTest {
 
         UUID id = UUID.randomUUID();
 
-        BDDMockito.given( customerServiceImpl.getCustomerById(id) )
+        BDDMockito.given( customerServiceImpl.getCustomerByIdV1(id) )
                 .willThrow( new ObjectNotFoundException("Customer not found."));
 
 
@@ -560,14 +556,13 @@ class CustomerControllerTest {
                 .state("paraíba")
                 .cep("58.135-000")
                 .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         addressDtoResponses.add(addressDtoResponse);
 
-        CustomerDtoResponse customer = CustomerDtoResponse.builder()
+        CustomerDtoResponseV1 customer = CustomerDtoResponseV1.builder()
                 .name("Ana Lívia Meira")
                 .email("ana@gmail.com")
                 .id(id)
@@ -575,7 +570,7 @@ class CustomerControllerTest {
                 .document("160.917.000-81")
                 .build();
 
-        Page<CustomerDtoResponse> page = new PageImpl<>(List.of(customer), Pageable.ofSize(20), 0);
+        Page<CustomerDtoResponseV1> page = new PageImpl<>(List.of(customer), Pageable.ofSize(20), 0);
 
 
         BDDMockito.given( customerServiceImpl.searchCustomers(null, "ana", Pageable.ofSize(10),
@@ -609,7 +604,7 @@ class CustomerControllerTest {
                             .build();
 
         BDDMockito.given( customerServiceImpl.getCustomer(uuid) )
-                .willReturn(Optional.ofNullable(customer));
+                .willReturn(customer);
 
         doNothing().when(addressServiceImpl).deleteAdressesByCustomer(customer);
 
@@ -655,19 +650,17 @@ class CustomerControllerTest {
         List<AddressDtoRequest> addressDtoRequests = new ArrayList<>();
 
         AddressDtoRequest addressDtoRequest1 = AddressDtoRequest.builder()
-                .state("paraíba")
-                .cep("58.135-000")
-                .district("João Pessoa")
-                .street("Rua Joaquim Virgulino da Silva")
+                .cep("58135000")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("1233")
                 .mainAddress(true)
                 .build();
 
         AddressDtoRequest addressDtoRequest2 = AddressDtoRequest.builder()
-                .state("paraíba")
                 .cep("58.140-000")
-                .district("Areial")
-                .street("Centro")
+                .publicArea("Centro")
+                .district("Centro")
                 .houseNumber("12")
                 .mainAddress(false)
                 .build();
@@ -675,22 +668,34 @@ class CustomerControllerTest {
         addressDtoRequests.add(addressDtoRequest1);
         addressDtoRequests.add(addressDtoRequest2);
 
-        CustomerDtoRequest dto = CustomerDtoRequest.builder()
+        UpdateCustomerDtoRequestV1 dto = UpdateCustomerDtoRequestV1.builder()
                 .name("ana livia")
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
 
-        CustomerDtoResponse customerDtoResponse = CustomerDtoResponse.builder()
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
+
+        AddressDtoResponse response1= AddressDtoResponse.builder()
+                .cep("58135000")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .city("esperança")
+                .state("PB")
+                .build();
+
+        addressDtoResponses.add(response1);
+
+        CustomerDtoResponseWithAddressesV1 customerDtoResponse = CustomerDtoResponseWithAddressesV1.builder()
                 .id(uuid)
                 .customerType(CustomerType.FISICA)
                 .email("emailteste@gmail.com")
                 .name("ana livia")
                 .phoneNumber("83999999999")
                 .document("160.917.000-81")
+                .addresses(addressDtoResponses)
                 .build();
 
         BDDMockito.given( customerServiceImpl.update(uuid, dto ) ).willReturn( customerDtoResponse );
@@ -698,7 +703,7 @@ class CustomerControllerTest {
         String json = new ObjectMapper().writeValueAsString( dto );
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .put(CUSTOMER_API + "/" + uuid)
+                .patch(CUSTOMER_API + "/" + uuid)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(  json  );
@@ -707,7 +712,6 @@ class CustomerControllerTest {
                 .perform( request )
                 .andExpect( MockMvcResultMatchers.status().isOk() )
                 .andExpect(jsonPath("id").hasJsonPath());
-
 
     }
 

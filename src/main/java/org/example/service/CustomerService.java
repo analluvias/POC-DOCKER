@@ -1,31 +1,45 @@
 package org.example.service;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.example.domain.entity.Customer;
-import org.example.domain.enums.CustomerType;
-import org.example.rest.dto_request.CustomerDtoRequest;
-import org.example.rest.dto_response.CustomerDtoResponse;
-import org.example.rest.dto_response.CustomerDtoResponseWithAdresses;
+import org.example.rest.dto_request.CustomerDtoRequestV1;
+import org.example.rest.dto_request.CustomerDtoRequestV2;
+import org.example.rest.dto_request.UpdateCustomerDtoRequestV1;
+import org.example.rest.dto_request.UpdateCustomerDtoRequestV2;
+import org.example.rest.dto_response.CustomerDtoResponseV1;
+import org.example.rest.dto_response.CustomerDtoResponseV2;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV2;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV1;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface CustomerService {
 
-    CustomerDtoResponse save(CustomerDtoRequest customerDto);
+    CustomerDtoResponseWithAddressesV1 saveV1(CustomerDtoRequestV1 customerDto);
 
     Boolean existsCustomersByDocument(String document);
 
-    CustomerDtoResponseWithAdresses getCustomerById(UUID id);
+    CustomerDtoResponseWithAddressesV1 getCustomerByIdV1(UUID id);
 
-    Page<CustomerDtoResponse> searchCustomers(String customerType, String name,
-                                              Pageable pageable, String email,
-                                              String phoneNumber, String document);
+    Page<CustomerDtoResponseV1> searchCustomers(String customerType, String name,
+                                                Pageable pageable, String email,
+                                                String phoneNumber, String document);
+
+    Page<CustomerDtoResponseV2> searchCustomersV2(String customerType, String name
+            , Pageable pageable, String email, String phoneNumber, String document, LocalDate value);
 
     void delete(UUID uuid);
 
-    Optional<Customer> getCustomer(UUID uuid);
+    Customer getCustomer(UUID uuid);
 
-    CustomerDtoResponse update(UUID uuid, CustomerDtoRequest request);
+    CustomerDtoResponseWithAddressesV1 update(UUID uuid, UpdateCustomerDtoRequestV1 request);
+
+    CustomerDtoResponseWithAddressesV2 saveV2(CustomerDtoRequestV2 request);
+
+    CustomerDtoResponseWithAddressesV2 getCustomerByIdV2(UUID id);
+
+    @Transactional
+    CustomerDtoResponseWithAddressesV2 updateV2(UUID uuid, UpdateCustomerDtoRequestV2 request);
 }

@@ -3,13 +3,17 @@ package org.example.rest.dto_request;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.domain.enums.CustomerType;
 
 @Builder
 @Data
-public class CustomerDtoRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomerDtoRequestV1 {
 
     @NotEmpty(message = "Name cannot be empty")
     private String name;

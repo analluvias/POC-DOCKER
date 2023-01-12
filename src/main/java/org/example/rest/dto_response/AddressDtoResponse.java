@@ -1,6 +1,6 @@
 package org.example.rest.dto_response;
 
-import java.util.UUID;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,17 +10,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AddressDtoResponse {
+public class AddressDtoResponse implements Serializable{
 
     private String id;
 
     private String state;
 
+    private String city;
+
+    private String publicArea;
+
     private String cep;
 
     private String district;
-
-    private String street;
 
     private String houseNumber;
 

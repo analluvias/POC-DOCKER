@@ -4,8 +4,8 @@ import org.example.domain.groups.CNPJGroup;
 import org.example.domain.groups.CPFGroup;
 
 public enum CustomerType {
-    FISICA("Fisica", "CPF", "000.000.000-00", CPFGroup.class),
-    JURIDICA("Juridica", "CNPJ", "00.000.000/0000-00", CNPJGroup.class);
+    FISICA("Fisica", "CPF", "00000000000", CPFGroup.class),
+    JURIDICA("Juridica", "CNPJ", "00000000000000", CNPJGroup.class);
 
     private final String description;
     private final String document;

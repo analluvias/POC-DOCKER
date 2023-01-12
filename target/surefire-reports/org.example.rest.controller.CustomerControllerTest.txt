@@ -1,4 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: org.example.rest.controller.CustomerControllerTest
 -------------------------------------------------------------------------------
-Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.614 s - in org.example.rest.controller.CustomerControllerTest
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.001 s <<< FAILURE! - in org.example.rest.controller.CustomerControllerTest
+org.example.rest.controller.CustomerControllerTest  Time elapsed: 0.001 s  <<< ERROR!
+java.lang.IllegalStateException: Failed to find merged annotation for @org.springframework.test.context.BootstrapWith(value=org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper.class)
+

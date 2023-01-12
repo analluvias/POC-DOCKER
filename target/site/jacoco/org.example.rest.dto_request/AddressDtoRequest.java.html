@@ -1,34 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddressDtoRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">projeto_sugerido</a> &gt; <a href="index.source.html" class="el_package">org.example.rest.dto_request</a> &gt; <span class="el_source">AddressDtoRequest.java</span></div><h1>AddressDtoRequest.java</h1><pre class="source lang-java linenums">package org.example.rest.dto_request;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-<span class="pc" id="L10">@Builder</span>
-<span class="pc bpc" id="L11" title="37 of 54 branches missed.">@Data</span>
-<span class="fc" id="L12">@NoArgsConstructor</span>
-<span class="fc" id="L13">@AllArgsConstructor</span>
+<span class="pc" id="L8">@Builder</span>
+<span class="pc bpc" id="L9" title="30 of 46 branches missed.">@Data</span>
+<span class="fc" id="L10">@NoArgsConstructor</span>
+<span class="fc" id="L11">@AllArgsConstructor</span>
 public class AddressDtoRequest {
 
-    @NotEmpty(message =&quot;state cannot be empty.&quot;)
-<span class="fc" id="L17">    private String state;</span>
+<span class="fc" id="L14">    private String cep;</span>
 
-    @NotEmpty(message =&quot;cep cannot be empty.&quot;)
-<span class="fc" id="L20">    private String cep;</span>
+<span class="fc" id="L16">    private String publicArea;</span>
 
-    @NotEmpty(message =&quot;district cannot be empty.&quot;)
-<span class="fc" id="L23">    private String district;</span>
+<span class="fc" id="L18">    private String district;</span>
 
-    @NotEmpty(message =&quot;street cannot be empty.&quot;)
-<span class="fc" id="L26">    private String street;</span>
+<span class="fc" id="L20">    private String houseNumber;</span>
 
-    @NotEmpty(message =&quot;house number cannot be empty.&quot;)
-<span class="fc" id="L29">    private String houseNumber;</span>
-
-    //@NotNull(message =&quot;You have to specify if this is the main address.&quot;)
-<span class="fc" id="L32">    private Boolean mainAddress;</span>
+<span class="fc" id="L22">    private Boolean mainAddress;</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
