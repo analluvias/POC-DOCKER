@@ -114,7 +114,7 @@ public class CustomerControllerV2Test {
                 .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();

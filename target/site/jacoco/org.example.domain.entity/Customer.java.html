@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -37,59 +39,59 @@ import org.hibernate.validator.constraints.br.CPF;
 import org.hibernate.validator.group.GroupSequenceProvider;
 
 
-<span class="pc bpc" id="L40" title="54 of 78 branches missed.">@Data</span>
-<span class="pc" id="L41">@Builder</span>
-<span class="fc" id="L42">@AllArgsConstructor</span>
-<span class="fc" id="L43">@NoArgsConstructor</span>
+<span class="pc bpc" id="L42" title="54 of 78 branches missed.">@Data</span>
+<span class="pc" id="L43">@Builder</span>
+<span class="fc" id="L44">@AllArgsConstructor</span>
+<span class="fc" id="L45">@NoArgsConstructor</span>
 @Entity
 @Getter
-<span class="pc" id="L46">@Setter</span>
+<span class="pc" id="L48">@Setter</span>
 @GroupSequenceProvider(CustomerGroupSequenceProvider.class)
 public class Customer {
 
     //lock otimista
     @Version
-<span class="fc" id="L52">    private Integer version;</span>
+<span class="fc" id="L54">    private Integer version;</span>
 
     @Type(type = &quot;uuid-char&quot;)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = &quot;id&quot;, nullable = false)
-<span class="fc" id="L58">    private UUID id;</span>
+<span class="fc" id="L60">    private UUID id;</span>
 
     @Column(name = &quot;name&quot;, nullable = false)
     @NotEmpty(message = &quot;Name cannot be empty&quot;)
-<span class="fc" id="L62">    private String name;</span>
+<span class="fc" id="L64">    private String name;</span>
 
     @Column(name = &quot;email&quot;, nullable = false, unique = true)
     @Email(message = &quot;You need a valid email address.&quot;)
     @NotEmpty(message = &quot;Email cannot be empty&quot;)
-<span class="fc" id="L67">    private String email;</span>
+<span class="fc" id="L69">    private String email;</span>
 
     @Column(name = &quot;phoneNumber&quot;, nullable = false, unique = true)
     @NotBlank(message = &quot;phone number cannot be empty&quot;)
     @Length(min = 11, max = 11, message = &quot;phone number must have 11 digits.&quot;)
     @Pattern(regexp=&quot;\\d+&quot;,message=&quot;phone number must have only digits.&quot;)
-<span class="fc" id="L73">    private String phoneNumber;</span>
+<span class="fc" id="L75">    private String phoneNumber;</span>
 
     @Column(name = &quot;customerType&quot;, nullable = false)
     @NotNull(message = &quot;customer type cannot be empty&quot;)
     @Enumerated(EnumType.STRING)
-<span class="fc" id="L78">    private CustomerType customerType;</span>
+<span class="fc" id="L80">    private CustomerType customerType;</span>
 
     @Column(name = &quot;document&quot;, nullable = false, unique = true)
     @CPF(groups = CPFGroup.class, message = &quot;CPF has 11 digits. &quot;)
     @CNPJ(groups = CNPJGroup.class, message = &quot;CNPJ has 14 digits.&quot;)
     @NotEmpty(message = &quot;document cannot be empty&quot;)
-<span class="fc" id="L84">    private String document;</span>
+<span class="fc" id="L86">    private String document;</span>
 
     @Column(name = &quot;birthdate&quot;)
     @JsonFormat(pattern = &quot;dd/MM/yyyy&quot;, shape = JsonFormat.Shape.STRING)
-<span class="fc" id="L88">    private LocalDate birthDate;</span>
+<span class="fc" id="L90">    private LocalDate birthDate;</span>
 
     @OneToMany(mappedBy = &quot;customer&quot;, fetch = FetchType.LAZY)
     @JsonIgnore
-<span class="fc" id="L92">    private List&lt;Address&gt; addresses;</span>
+<span class="fc" id="L94">    private List&lt;Address&gt; addresses;</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

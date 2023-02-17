@@ -54,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
 
 <span class="fc" id="L55">            checkAddressFields(addressDto);</span>
 
-<span class="fc" id="L57">            ViaCepDtoResponse viaCepDtoResponse = accessViaCep(addressDto);</span>
+<span class="fc" id="L57">            ViaCepDtoResponse viaCepDtoResponse = ViaCepService.accessViaCep(addressDto);</span>
 
 <span class="fc" id="L59">            Address address = buildAddress(viaCepDtoResponse, addressDto, customer);</span>
 
@@ -135,7 +135,7 @@ public class AddressServiceImpl implements AddressService {
 
 <span class="fc bfc" id="L136" title="All 2 branches covered.">        if (request.getCep() != null){</span>
 <span class="fc" id="L137">            viaCepDtoResponse =</span>
-<span class="fc" id="L138">                    accessViaCep( modelMapper.map(request, AddressDtoRequest.class) );</span>
+<span class="fc" id="L138">                    ViaCepService.accessViaCep( modelMapper.map(request, AddressDtoRequest.class) );</span>
 
 <span class="fc bfc" id="L140" title="All 2 branches covered.">            if (viaCepDtoResponse.getUf() == null)</span>
 <span class="fc" id="L141">                throw new CepShouldHaveStateAndCityException();</span>
@@ -169,79 +169,53 @@ public class AddressServiceImpl implements AddressService {
     }
 
 
-    public ViaCepDtoResponse accessViaCep(AddressDtoRequest addressDto) {
 
-        try {
-
-<span class="fc" id="L176">            URL url = new URL(&quot;https://viacep.com.br/ws/&quot;+ addressDto.getCep()+&quot;/json/&quot;);</span>
-<span class="fc" id="L177">            URLConnection connection = url.openConnection();</span>
-<span class="fc" id="L178">            InputStream is = connection.getInputStream();</span>
-<span class="fc" id="L179">            BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));</span>
-
-<span class="fc" id="L181">            String cep = &quot;&quot;;</span>
-<span class="fc" id="L182">            StringBuilder jsonCep = new StringBuilder();</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">            while ((cep = br.readLine()) != null){</span>
-<span class="fc" id="L184">                jsonCep.append(cep);</span>
-            }
-
-<span class="fc" id="L187">            log.info(jsonCep.toString());</span>
-
-<span class="fc" id="L189">            return new Gson()</span>
-<span class="fc" id="L190">                    .fromJson(jsonCep.toString(), ViaCepDtoResponse.class);</span>
-
-<span class="fc" id="L192">        } catch (Exception e) {</span>
-
-<span class="fc" id="L194">            throw new ViaCepAccessException(e);</span>
-
-        }
-
-    }
 
     private void checkAddressFields(AddressDtoRequest addressDto) {
 
-<span class="fc bfc" id="L202" title="All 2 branches covered.">        if (addressDto.getMainAddress() == null)</span>
-<span class="fc" id="L203">            throw new NullFieldException(&quot;Address must have mainAddress field.&quot;);</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        if (addressDto.getMainAddress() == null)</span>
+<span class="fc" id="L177">            throw new NullFieldException(&quot;Address must have mainAddress field.&quot;);</span>
 
-<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (addressDto.getDistrict() == null)</span>
-<span class="fc" id="L206">            throw new NullFieldException(&quot;Address must have district field.&quot;);</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (addressDto.getDistrict() == null)</span>
+<span class="fc" id="L180">            throw new NullFieldException(&quot;Address must have district field.&quot;);</span>
 
-<span class="fc bfc" id="L208" title="All 2 branches covered.">        if (addressDto.getPublicArea() == null)</span>
-<span class="fc" id="L209">            throw new NullFieldException(&quot;Address must have publicArea field.&quot;);</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (addressDto.getPublicArea() == null)</span>
+<span class="fc" id="L183">            throw new NullFieldException(&quot;Address must have publicArea field.&quot;);</span>
 
-<span class="fc bfc" id="L211" title="All 2 branches covered.">        if (addressDto.getCep() == null)</span>
-<span class="fc" id="L212">            throw new NullFieldException(&quot;Address must have CEP field.&quot;);</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        if (addressDto.getCep() == null)</span>
+<span class="fc" id="L186">            throw new NullFieldException(&quot;Address must have CEP field.&quot;);</span>
 
-<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (addressDto.getHouseNumber() == null)</span>
-<span class="fc" id="L215">            throw new NullFieldException(&quot;Address must have houseNumber field.&quot;);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if (addressDto.getHouseNumber() == null)</span>
+<span class="fc" id="L189">            throw new NullFieldException(&quot;Address must have houseNumber field.&quot;);</span>
 
-<span class="fc" id="L217">    }</span>
+<span class="fc" id="L191">    }</span>
 
     public Address buildAddress(ViaCepDtoResponse viaCep, AddressDtoRequest request, Customer customer) {
 
-<span class="fc" id="L221">        Address buildingAddress = new Address();</span>
+<span class="fc" id="L195">        Address buildingAddress = new Address();</span>
 
-<span class="fc" id="L223">        buildingAddress.setCep(request.getCep());</span>
+<span class="fc" id="L197">        buildingAddress.setCep(request.getCep());</span>
 
-<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (viaCep.getUf() == null)</span>
-<span class="fc" id="L226">            throw new CepShouldHaveStateAndCityException();</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        if (viaCep.getUf() == null)</span>
+<span class="fc" id="L200">            throw new CepShouldHaveStateAndCityException();</span>
         else
-<span class="fc" id="L228">            buildingAddress.setState( viaCep.getUf() );</span>
+<span class="fc" id="L202">            buildingAddress.setState( viaCep.getUf() );</span>
 
 
-<span class="fc bfc" id="L231" title="All 2 branches covered.">        if (viaCep.getLocalidade() == null)</span>
-<span class="fc" id="L232">            throw new CepShouldHaveStateAndCityException();</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (viaCep.getLocalidade() == null)</span>
+<span class="fc" id="L206">            throw new CepShouldHaveStateAndCityException();</span>
         else
-<span class="fc" id="L234">            buildingAddress.setCity(  viaCep.getLocalidade()  );</span>
+<span class="fc" id="L208">            buildingAddress.setCity(  viaCep.getLocalidade()  );</span>
 
 
-<span class="fc" id="L237">        buildingAddress.setDistrict(request.getDistrict());</span>
-<span class="fc" id="L238">        buildingAddress.setPublicArea( request.getPublicArea() );</span>
+<span class="fc" id="L211">        buildingAddress.setDistrict(request.getDistrict());</span>
+<span class="fc" id="L212">        buildingAddress.setPublicArea( request.getPublicArea() );</span>
 
-<span class="fc" id="L240">        buildingAddress.setHouseNumber(  request.getHouseNumber()  );</span>
-<span class="fc" id="L241">        buildingAddress.setMainAddress(  request.getMainAddress()  );</span>
-<span class="fc" id="L242">        buildingAddress.setCustomer(customer);</span>
+<span class="fc" id="L214">        buildingAddress.setHouseNumber(  request.getHouseNumber()  );</span>
+<span class="fc" id="L215">        buildingAddress.setMainAddress(  request.getMainAddress()  );</span>
+<span class="fc" id="L216">        buildingAddress.setCustomer(customer);</span>
 
-<span class="fc" id="L244">        return buildingAddress;</span>
+<span class="fc" id="L218">        return buildingAddress;</span>
     }
 
 }

@@ -129,7 +129,7 @@ class CustomerServiceTest {
         String document = "16091700081";
 
         CustomerDtoRequestV1 customerdto = CustomerDtoRequestV1.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .name("Ana")
                 .email(  email  )
                 .phoneNumber(  phoneNumber  )
@@ -202,7 +202,7 @@ class CustomerServiceTest {
 
     @Test
     @DisplayName("Should throw InvalidCustomerTypeException")
-    void doNotsaveCustomerInvalidCustomerTypeException(){
+    void doNotsaveCustomerInvalidCustomerTypeExceptionNull(){
 
         UUID uuid = UUID.randomUUID();
 
@@ -322,6 +322,127 @@ class CustomerServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw InvalidCustomerTypeException")
+    void doNotsaveCustomerInvalidCustomerTypeException(){
+
+        UUID uuid = UUID.randomUUID();
+
+        List<AddressDtoRequest> addresses = new ArrayList<>();
+
+        AddressDtoRequest address1 = AddressDtoRequest.builder()
+                .cep("58135000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        AddressDtoRequest address2 = AddressDtoRequest.builder()
+                .cep("58140000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("12")
+                .mainAddress(false)
+                .build();
+
+        addresses.add(address1);
+        addresses.add(address2);
+
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
+        AddressDtoResponse response1 = AddressDtoResponse.builder()
+                .cep("58135000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        AddressDtoResponse response2 = AddressDtoResponse.builder()
+                .cep("58140000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("12")
+                .mainAddress(false)
+                .build();
+
+        addressDtoResponses.add(response1);
+        addressDtoResponses.add(response2);
+
+
+        String email = "ana@gmail.com";
+        String phoneNumber = "83999999999";
+        String document = "16091700081";
+
+        CustomerDtoRequestV1 customerdto = CustomerDtoRequestV1.builder()
+                .customerType("FISIC")
+                .name("Ana")
+                .email(  email  )
+                .phoneNumber(  phoneNumber  )
+                .document(  document  )
+                .addresses(  addresses  )
+                .build();
+
+        Customer customer = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(uuid)
+                .name("Ana")
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .document(  document  )
+                .build();
+
+        Mockito.doReturn(Optional.empty())
+                .when(customerRepository).findCustomerByDocument( document );
+
+        Mockito.doReturn(Optional.empty())
+                .when(customerRepository).findByEmail(  email  );
+
+        Mockito.doReturn(Optional.empty())
+                .when(customerRepository).findByPhoneNumber(  document  );
+
+        when(modelMapper.map(customerdto, Customer.class))
+                .thenReturn(  customer  );
+
+        when(addressServiceImpl.save(addresses, customer))
+                .thenReturn(  addressDtoResponses  );
+
+        CustomerDtoResponseWithAddressesV1 finalResponse = CustomerDtoResponseWithAddressesV1.builder()
+                .id(uuid)
+                .customerType(CustomerType.FISICA)
+                .name("Ana")
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .document("16091700081")
+                .build();
+
+        when(modelMapper.map(any(Customer.class), eq(CustomerDtoResponseWithAddressesV1.class)))
+                .thenReturn(finalResponse);
+
+        when( customerRepository.save( customer ) )
+                .thenReturn(  Customer.builder()
+                        .id(uuid)
+                        .customerType(CustomerType.FISICA)
+                        .name("Ana")
+                        .email(email)
+                        .phoneNumber(phoneNumber)
+                        .document("16091700081")
+                        .build() );
+
+        CustomerDtoResponseWithAddressesV1 mockResponse = mock(CustomerDtoResponseWithAddressesV1.class);
+
+        doNothing().when(  mockResponse )
+                .setAddresses(  addressDtoResponses  );
+
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> customerService.saveV1(customerdto));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(InvalidCustomerTypeException.class)
+                .hasMessage("Invalid customer type, should be FISICA or JURIDICA");
+    }
+
+    @Test
     @DisplayName("Should throw DocumentInUseException -> Document already in use")
     void doNotsaveCustomerTest(){
 
@@ -349,7 +470,7 @@ class CustomerServiceTest {
         addresses.add(address2);
 
         CustomerDtoRequestV1 customerdto = CustomerDtoRequestV1.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .name("Ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -407,7 +528,7 @@ class CustomerServiceTest {
         addresses.add(address2);
 
         CustomerDtoRequestV1 customerdto = CustomerDtoRequestV1.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .name("Ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -464,7 +585,7 @@ class CustomerServiceTest {
         addresses.add(address2);
 
         CustomerDtoRequestV1 customerdto = CustomerDtoRequestV1.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .name("Ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
@@ -593,6 +714,32 @@ class CustomerServiceTest {
         assertThat(page.getTotalElements()).isEqualTo(1);
     }
 
+
+    @Test
+    @DisplayName("should search a customer by properties")
+    void shouldReturnNullWhenTheRequestIsEmptyV1(){
+
+        UUID uuid = UUID.randomUUID();
+
+        Customer customerSearched = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(uuid)
+                .name("Ana")
+                .email("ana@gmail.com")
+                .phoneNumber("83999999999")
+                .document("16091700081")
+                .build();
+
+        Page<Customer> customerPage = new PageImpl<>(List.of(customerSearched));
+
+        when(  customerRepository.findAll(  (  Example<Customer>) any(), (Pageable) any())  )
+                .thenReturn(customerPage);
+
+        Page<CustomerDtoResponseV1> page = customerService.searchCustomers(null, null, null,
+                null, null, null);
+
+        assertThat(page.getTotalElements()).isEqualTo(0);
+    }
 
     @Test
     @DisplayName("should search a customer by properties with null customer type")
@@ -1394,7 +1541,7 @@ class CustomerServiceTest {
 
 
         CustomerDtoRequestV2 customerdtoV2 = CustomerDtoRequestV2.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
                 .name("Ana")
                 .email(  email  )
@@ -1426,7 +1573,7 @@ class CustomerServiceTest {
 
 
         CustomerDtoRequestV1 customerdtoV1 = CustomerDtoRequestV1.builder()
-                .customerType(CustomerType.FISICA)
+                .customerType(String.valueOf(CustomerType.FISICA))
                 .name("Ana")
                 .email(  email  )
                 .phoneNumber(  phoneNumber  )
@@ -1618,6 +1765,34 @@ class CustomerServiceTest {
                 "ana@gmail.com", "83999999999", "16091700081", LocalDate.of(2020, Month.JANUARY, 8));
 
         assertThat(page.getTotalElements()).isEqualTo(1);
+    }
+
+
+    @Test
+    @DisplayName("should return null page when null request - v2")
+    void shouldReturnNullPageWhenNullRequestV2(){
+
+        UUID uuid = UUID.randomUUID();
+
+        Customer customerSearched = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(uuid)
+                .name("Ana")
+                .email("ana@gmail.com")
+                .phoneNumber("83999999999")
+                .document("16091700081")
+                .build();
+
+        Page<Customer> customerPage = new PageImpl<>(List.of(customerSearched));
+
+        when(  customerRepository.findAll(  (  Example<Customer>) any(), (Pageable) any())  )
+                .thenReturn(customerPage);
+
+
+        Page<CustomerDtoResponseV2> page = customerService.searchCustomersV2(null, null, null,
+                null, null, null, null);
+
+        assertThat(page.getTotalElements()).isEqualTo(0);
     }
 
 
@@ -1856,6 +2031,143 @@ class CustomerServiceTest {
                 //.name("Ana")
                 .email(email)
                 .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
+                .phoneNumber(phoneNumber)
+                .document(document)
+                .addresses(  addresses  )
+                .build();
+
+
+        BDDMockito.when(customerRepository.findById(uuid)).thenReturn(Optional.ofNullable(customer));
+
+
+        when( modelMapper.map(customerdto,
+                UpdateCustomerDtoRequestV1.class) ).thenReturn(
+                UpdateCustomerDtoRequestV1.builder()
+                        .email("ana@gmail.com")
+                        .phoneNumber("83999999999")
+                        .document("160.917.000-81")
+                        .addresses(  addresses  )
+                        .build()
+        );
+
+
+        when(customerRepository.findByEmail(email))
+                .thenReturn(Optional.empty());
+
+        when(customerRepository.findCustomerByDocument(document))
+                .thenReturn(Optional.empty());
+
+
+        when(customerRepository.findByPhoneNumber(phoneNumber))
+                .thenReturn(Optional.empty());
+
+
+        doNothing().when(addressServiceImpl).deleteAdressesByCustomer(customer);
+
+        List<AddressDtoResponse> addressDtoResponses = new ArrayList<>();
+        AddressDtoResponse response1 = AddressDtoResponse.builder()
+                .cep("58135000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        AddressDtoResponse response2 = AddressDtoResponse.builder()
+                .cep("58140000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("12")
+                .mainAddress(false)
+                .build();
+
+        addressDtoResponses.add(response1);
+        addressDtoResponses.add(response2);
+
+        when(addressServiceImpl.save(addresses, customer))
+                .thenReturn(  addressDtoResponses  );
+
+        Customer customerToSave = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .name("Ana")
+                .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .document(document)
+                .build();
+
+        Customer customerSaved = Customer.builder()
+                .customerType(CustomerType.FISICA)
+                .id(uuid)
+                .name("Ana")
+                .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .document(document)
+                .build();
+
+        when(customerRepository.save(customerToSave)).thenReturn(customerSaved);
+
+
+        when( modelMapper.map(any(), eq(CustomerDtoResponseWithAddressesV2.class)) ).thenReturn(
+                CustomerDtoResponseWithAddressesV2.builder()
+                        .id(uuid)
+                        .customerType(CustomerType.FISICA)
+                        .name("Ana")
+                        .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
+                        .email("ana@gmail.com")
+                        .phoneNumber("83999999999")
+                        .document("160.917.000-81")
+                        .addresses(  addressDtoResponses  )
+                        .build()
+        );
+
+        //execução
+        customerService.updateV2(uuid, customerdto);
+
+        //verificação
+        assert customer != null;
+        Mockito.verify(customerRepository, Mockito.times(1)).save(customer);
+    }
+
+
+    @Test
+    @DisplayName("should update a customer - v2 - without birthdate")
+    void shouldUpdateACustomerV2WithoutBirthDate(){
+
+        UUID uuid = UUID.randomUUID();
+
+        Customer customer = Customer.builder()
+                .id(uuid)
+                .customerType(CustomerType.FISICA)
+                .birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
+                .id(uuid)
+                .name("Ana")
+                .email("ana0@gmail.com")
+                .phoneNumber("83987878787")
+                .document("05140557070")
+                .build();
+
+        List<AddressDtoRequest> addresses = new ArrayList<>();
+
+        AddressDtoRequest address1 = AddressDtoRequest.builder()
+                .cep("58135000")
+                .publicArea("Avenida Rio Branco")
+                .district("Bela vista")
+                .houseNumber("1233")
+                .mainAddress(true)
+                .build();
+
+        addresses.add(address1);
+
+        String document = "16091700081";
+        String phoneNumber = "83999999999";
+        String email = "ana@gmail.com";
+
+        UpdateCustomerDtoRequestV2 customerdto = UpdateCustomerDtoRequestV2.builder()
+                .name("Ana")
+                .email(email)
+                //.birthDate( LocalDate.of(2020, Month.JANUARY, 8) )
                 .phoneNumber(phoneNumber)
                 .document(document)
                 .addresses(  addresses  )

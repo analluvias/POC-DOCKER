@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: org.example.service.AddressServiceTest
 -------------------------------------------------------------------------------
-Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.012 s - in org.example.service.AddressServiceTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 56.264 s - in org.example.service.AddressServiceTest

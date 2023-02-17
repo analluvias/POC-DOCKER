@@ -25,7 +25,7 @@ public class CustomerDtoRequestV1 {
     private String phoneNumber;
 
     @NotNull(message = "customer type cannot be empty")
-    private CustomerType customerType;
+    private String customerType;
 
     @NotEmpty(message = "document cannot be empty")
     private String document;

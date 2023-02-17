@@ -54,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
 
             checkAddressFields(addressDto);
 
-            ViaCepDtoResponse viaCepDtoResponse = accessViaCep(addressDto);
+            ViaCepDtoResponse viaCepDtoResponse = ViaCepService.accessViaCep(addressDto);
 
             Address address = buildAddress(viaCepDtoResponse, addressDto, customer);
 
@@ -135,7 +135,7 @@ public class AddressServiceImpl implements AddressService {
 
         if (request.getCep() != null){
             viaCepDtoResponse =
-                    accessViaCep( modelMapper.map(request, AddressDtoRequest.class) );
+                    ViaCepService.accessViaCep( modelMapper.map(request, AddressDtoRequest.class) );
 
             if (viaCepDtoResponse.getUf() == null)
                 throw new CepShouldHaveStateAndCityException();
@@ -169,33 +169,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
 
-    public ViaCepDtoResponse accessViaCep(AddressDtoRequest addressDto) {
 
-        try {
-
-            URL url = new URL("https://viacep.com.br/ws/"+ addressDto.getCep()+"/json/");
-            URLConnection connection = url.openConnection();
-            InputStream is = connection.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-            String cep = "";
-            StringBuilder jsonCep = new StringBuilder();
-            while ((cep = br.readLine()) != null){
-                jsonCep.append(cep);
-            }
-
-            log.info(jsonCep.toString());
-
-            return new Gson()
-                    .fromJson(jsonCep.toString(), ViaCepDtoResponse.class);
-
-        } catch (Exception e) {
-
-            throw new ViaCepAccessException(e);
-
-        }
-
-    }
 
     private void checkAddressFields(AddressDtoRequest addressDto) {
 

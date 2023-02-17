@@ -37,7 +37,9 @@ public class CustomerControllerV1 {
 
     @Caching(evict = {
             @CacheEvict(value ="customerByIdV1", allEntries = true),
-            @CacheEvict(value = "searchCustomerV1", allEntries = true)
+            @CacheEvict(value = "customerByIdV2", allEntries = true),
+            @CacheEvict(value = "searchCustomerV1", allEntries = true),
+            @CacheEvict(value = "searchCustomerV2", allEntries = true)
     })
     @ApiOperation(value = "Create a customer.")
     @ApiResponses(value = {
@@ -91,7 +93,9 @@ public class CustomerControllerV1 {
 
     @Caching(evict = {
             @CacheEvict(value ="customerByIdV1", key = "#id"),
+            @CacheEvict(value = "customerByIdV2", key = "#id"),
             @CacheEvict(value = "searchCustomerV1", allEntries = true),
+            @CacheEvict(value = "searchCustomerV2", allEntries = true),
             @CacheEvict(value ="addressesById", key = "#id")
     })
     @ApiOperation(value = "delete an customer by id")
@@ -107,6 +111,8 @@ public class CustomerControllerV1 {
     }
 
     @Caching(evict = {
+            @CacheEvict(value ="customerByIdV2", key = "#id"),
+            @CacheEvict(value = "searchCustomerV2", allEntries = true),
             @CacheEvict(value ="customerByIdV1", key = "#id"),
             @CacheEvict(value = "searchCustomerV1", allEntries = true),
             @CacheEvict(value ="addressesById", key = "#id")

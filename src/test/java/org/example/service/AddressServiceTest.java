@@ -28,6 +28,7 @@ import org.example.rest.exception.exceptions.TooManyAddressesException;
 import org.example.rest.exception.exceptions.TooManyMainAddressesException;
 import org.example.rest.exception.exceptions.ViaCepAccessException;
 import org.example.service.impl.AddressServiceImpl;
+import org.example.service.impl.ViaCepService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -639,7 +640,7 @@ class AddressServiceTest {
 
 
         //execução
-        Throwable exception = Assertions.catchThrowable(() -> addressService.accessViaCep(request));
+        Throwable exception = Assertions.catchThrowable(() -> ViaCepService.accessViaCep(request));
 
         //verificação
         assertThat(exception)

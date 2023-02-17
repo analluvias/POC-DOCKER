@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,8 +17,8 @@ import org.example.rest.dto_request.UpdateCustomerDtoRequestV2;
 import org.example.rest.dto_response.AddressDtoResponse;
 import org.example.rest.dto_response.CustomerDtoResponseV1;
 import org.example.rest.dto_response.CustomerDtoResponseV2;
-import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV2;
 import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV1;
+import org.example.rest.dto_response.CustomerDtoResponseWithAddressesV2;
 import org.example.rest.exception.exceptions.DocumentInUseException;
 import org.example.rest.exception.exceptions.EmailInUseException;
 import org.example.rest.exception.exceptions.EqualValueException;
@@ -29,6 +30,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,6 +128,15 @@ public class CustomerServiceImpl implements CustomerService {
 
             Customer customerToSearch = buildCustomerToSearch(customerType, name, email, phoneNumber, document);
 
+            if (customerToSearch.getCustomerType() == null && customerToSearch.getName() == null
+                    && customerToSearch.getEmail() == null && customerToSearch.getPhoneNumber() == null
+                    && customerToSearch.getDocument() == null){
+
+                Page<CustomerDtoResponseV1> nullPage = new PageImpl<>(Collections.emptyList());
+                return nullPage;
+
+            }
+
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withIgnoreCase("name", "email", "document")
                     .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
@@ -155,6 +166,15 @@ public class CustomerServiceImpl implements CustomerService {
 
             if (value != null){
                 customerToSearch.setBirthDate(value);
+            }
+
+            if (customerToSearch.getCustomerType() == null && customerToSearch.getName() == null
+                    && customerToSearch.getEmail() == null && customerToSearch.getPhoneNumber() == null
+                    && customerToSearch.getDocument() == null && customerToSearch.getBirthDate() == null){
+
+                Page<CustomerDtoResponseV2> nullPage = new PageImpl<>(Collections.emptyList());
+                return nullPage;
+
             }
 
             ExampleMatcher matcher = ExampleMatcher.matching()
@@ -253,10 +273,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
 
-    private static void testCustomerType(CustomerType cType) {
+    private static void testCustomerType(String cType) {
 
-        if (cType == null || (!cType.toString().equals("FISICA")
-                && !cType.toString().equals("JURIDICA")))
+        System.out.println(cType);
+
+        if ( cType == null )
+            throw new InvalidCustomerTypeException();
+        else if ( !cType.equals("FISICA") && !cType.equals("JURIDICA"))
             throw new InvalidCustomerTypeException();
 
     }
@@ -265,6 +288,8 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerDtoResponseWithAddressesV2 saveV2(CustomerDtoRequestV2 customerDtoV2) {
+
+        testCustomerType(customerDtoV2.getCustomerType().toString());
 
         CustomerDtoRequestV1 customerDtoRequestV1 = modelMapper.map(customerDtoV2, CustomerDtoRequestV1.class);
 
@@ -381,5 +406,7 @@ public class CustomerServiceImpl implements CustomerService {
         return document;
 
     }
+
+
 
 }

@@ -113,7 +113,7 @@ class CustomerControllerV1Test {
                 .name("ana livia")
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -223,7 +223,7 @@ class CustomerControllerV1Test {
                 .name("ana livia")
                 .email("emailteste@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -273,7 +273,7 @@ class CustomerControllerV1Test {
         CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -320,7 +320,7 @@ class CustomerControllerV1Test {
         CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -367,7 +367,7 @@ class CustomerControllerV1Test {
         CustomerDtoRequestV1 dto = CustomerDtoRequestV1.builder()
                 .name("ana")
                 .email("ana@gmail.com")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -415,7 +415,7 @@ class CustomerControllerV1Test {
                 .name("ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 //.document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();
@@ -463,7 +463,7 @@ class CustomerControllerV1Test {
                 .name("ana")
                 .email("ana@gmail.com")
                 .phoneNumber("83999999999")
-                .customerType(CustomerType.FISICA)
+                .customerType("FISICA")
                 .document("160.917.000-81")
                 .addresses(  addressDtoRequests  )
                 .build();

@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0 # base image
+    command: mysqld --default-authentication-plugin=mysql_native_password # comando de inicialização
+    restart: always # reinicializar sempre que houver falha
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: Baratavoa1 # senha padrao usuario root
+      MYSQL_PASSWORD: Baratavoa1 # senha padrao mysql
+      MYSQL_DATABASE: customer_address # nome db
+    ports:
+      - "3307:3306" # portas - host:docker
+
+
+
